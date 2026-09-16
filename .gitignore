@@ -199,3 +199,6 @@ ruvector.db
 # package.json), created 2026-07-13, unrelated to this repo's content. Kept on
 # disk but never tracked here. To track it after all: delete this entry.
 /my-ai-app/
+
+# Media/AI venv (per-machine, recreate with: uv venv --python 3.12 .venv-media)
+/.venv-media/
