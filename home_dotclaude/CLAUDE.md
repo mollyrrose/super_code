@@ -1227,12 +1227,34 @@ env var, so plain `ssh` cannot be scripted against a password-only host). It
 reads RIG_PASSWORD, never prints it, and `--install-key` restores key auth.
 `--probe` reports host, GPUs, driver and python in one call.
 
-**What it is good for, and what it is not.** Each card is 8 GB -- the SAME as
-the laptop's RTX 4070 -- so moving one model there does NOT make it bigger. What
-the rig adds is **six jobs at once** (and, with sharding, up to ~48 GB for a
-single model). Turing (7.5) means **fp16 yes, BF16 no, FP8 no, and
-FlashAttention-2 will not build**; most 2026 checkpoints ship bf16, so they need
-fp16 conversion or they will not load. No NVLink; PCIe only.
+**What it is good for, and what it is not.** Measured 2026-09-16, and the
+answer is less than the phrase "6-GPU rig" suggests:
+
+|  | Laptop | Rig |
+|---|---|---|
+| GPU | RTX 4070, 8 GB, Ada -- **bf16 works** | 6x 2060 SUPER, 8 GB, Turing -- **no bf16** |
+| System RAM | **31.7 GB** | **7.7 GB** |
+| CPU | i9-13900H, 14 cores (2023) | i5-4570, 4 cores (2013) |
+
+**The laptop wins on every axis except card count.** Same VRAM per card, 4x the
+system RAM, a decade newer CPU, and bf16 support.
+
+The decisive one is RAM. **CPU offload -- the standard way to run a model larger
+than VRAM -- needs system memory to hold the weights, so it works on the laptop
+and NOT on the rig.** A 12-24 GB model fits in 31.7 GB of RAM; it does not fit
+in 7.7 GB. So the rig cannot run bigger models than the laptop; it runs the same
+size or smaller.
+
+7.7 GB of RAM also caps parallelism: each worker is its own process holding its
+own copy of the weights, so realistically **2-3 concurrent jobs, not six**.
+
+Turing (7.5) means **fp16 yes, BF16 no, FP8 no, and FlashAttention-2 will not
+build**; most 2026 checkpoints ship bf16, so they need fp16 conversion or they
+will not load. No NVLink; PCIe only.
+
+**Do not move work to the rig expecting better quality -- it is the weaker
+machine.** Move work there to run something long unattended without tying up the
+laptop, or to run 2-3 small fp16 jobs side by side.
 
 Rule of thumb: **batch and parallel work goes to the rig, modern bf16 models
 stay on the laptop.**
