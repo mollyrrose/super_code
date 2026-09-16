@@ -51,6 +51,7 @@ SHARED_SECTION_PREFIXES = [
     "Hang-prone commands",
     "Token compression layer",
     "Scan GitHub code before downloading it",
+    "GPU rig",
     "Project directory boundaries and dual-window safety",
     "Shared TODO files",
     "AGENTS.md handling",

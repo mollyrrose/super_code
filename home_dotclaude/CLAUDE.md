@@ -1204,6 +1204,46 @@ build."
   - model-router predictions sane (`.smart_router_eval.jsonl`)?
   - memory + decision-log entries present and current for active projects?
 
+## GPU rig (6x RTX 2060 SUPER) -- shared across every project
+
+There is a second machine available to ALL projects on this setup, not just the
+one it was set up from. Measured 2026-09-16:
+
+```
+6x NVIDIA GeForce RTX 2060 SUPER, 8192 MiB each, compute capability 7.5
+driver 610.88 | Windows 10 Pro | rig@100.85.73.31 (Tailscale) | Python 3.12.10
+torch 2.14.0+cu126, cuda True, 6 devices, arch_list includes sm_75
+```
+
+**Access: passwordless SSH, already working.** `ssh rig@100.85.73.31 <command>`.
+The key lives in `C:/ProgramData/ssh/administrators_authorized_keys` on the rig
+because the account is an Administrator -- Windows sshd IGNORES
+`~/.ssh/authorized_keys` for admin accounts, which is the classic reason a key
+looks installed and every login still fails with `Permission denied`.
+
+Fallback if the key is ever lost: `~/.claude/scripts/rig_ssh.py` does
+password auth via paramiko (OpenSSH itself refuses a password from a pipe or an
+env var, so plain `ssh` cannot be scripted against a password-only host). It
+reads RIG_PASSWORD, never prints it, and `--install-key` restores key auth.
+`--probe` reports host, GPUs, driver and python in one call.
+
+**What it is good for, and what it is not.** Each card is 8 GB -- the SAME as
+the laptop's RTX 4070 -- so moving one model there does NOT make it bigger. What
+the rig adds is **six jobs at once** (and, with sharding, up to ~48 GB for a
+single model). Turing (7.5) means **fp16 yes, BF16 no, FP8 no, and
+FlashAttention-2 will not build**; most 2026 checkpoints ship bf16, so they need
+fp16 conversion or they will not load. No NVLink; PCIe only.
+
+Rule of thumb: **batch and parallel work goes to the rig, modern bf16 models
+stay on the laptop.**
+
+Etiquette: it is a shared machine on someone else's Tailscale account. Do not
+reconfigure Tailscale, and check `nvidia-smi` for other people's jobs before
+claiming all six cards.
+
+Kill switch: stop using it -- nothing here runs automatically. Delete
+`~/.claude/scripts/rig_ssh.py` to remove the password fallback.
+
 ## Skills index and routing
 
 The skills below are always present in this setup and should be invoked via the Skill tool when their trigger fires. Auto-discovery already resolves them, but pinning the routing here guarantees Claude prefers the skill over an ad-hoc response.
