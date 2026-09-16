@@ -202,3 +202,6 @@ ruvector.db
 
 # Media/AI venv (per-machine, recreate with: uv venv --python 3.12 .venv-media)
 /.venv-media/
+
+# Image-generation venv (per-machine; recreate with scripts/setup_image_venv.sh)
+/.venv-image/
