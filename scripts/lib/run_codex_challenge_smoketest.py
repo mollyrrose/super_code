@@ -183,11 +183,33 @@ def test_api_pick_best():
     assert m._api_pick_best("deepseek", ["deepseek-chat", "deepseek-reasoner"]) == "deepseek-reasoner"
     assert m._api_pick_best("deepseek", ["deepseek-chat"]) == "deepseek-chat"
     assert m._api_pick_best("deepseek", ["something-else"]) is None
-    # Stable alias beats a dated snapshot of the same family.
-    assert m._api_pick_best("openai", ["gpt-5-2026-01-01", "gpt-5", "gpt-4o"]) == "gpt-5"
-    # No stable alias -> latest dated snapshot wins.
+    # OpenAI is version-ranked, not list-ranked: a newer family wins even when
+    # no pattern in the fallback list mentions it. This is the regression that
+    # let gpt-5.5 keep winning after gpt-5.6-* and gpt-6-astra shipped.
+    live = ["gpt-4o", "gpt-5", "gpt-5.5", "gpt-5.5-pro", "gpt-5.6-luna",
+            "gpt-5.6-sol", "gpt-5.6-terra", "gpt-6-astra", "o3"]
+    assert m._api_pick_best("openai", live) == "gpt-6-astra"
+    # A hypothetical future family must win with NO code change.
+    assert m._api_pick_best("openai", live + ["gpt-7-nova"]) == "gpt-7-nova"
+    # Within a family: pro beats plain, and an undated alias beats a snapshot.
+    assert m._api_pick_best("openai", ["gpt-5.5", "gpt-5.5-pro"]) == "gpt-5.5-pro"
+    assert m._api_pick_best("openai", ["gpt-5-2026-01-01", "gpt-5"]) == "gpt-5"
     assert m._api_pick_best("openai", ["gpt-5-2025-07-15", "gpt-5-2026-01-01"]) == "gpt-5-2026-01-01"
-    print("[ok] _api_pick_best: highest family wins, stable alias preferred")
+    # Weak variants must never win, even when they are the newest thing listed.
+    # The list is deliberately minimal and the mini/nano ids are hypothetical
+    # (like gpt-7-nova above): the exclusion is only provable when the weak
+    # variant comes from a NEWER family than the alternative -- otherwise it
+    # would lose on version anyway and the assertion would pass even with the
+    # exclusion broken. Adding gpt-6-astra here would make the expected answer
+    # gpt-6-astra and this test would stop proving anything about mini/nano.
+    # The real codename variants (astra/luna/sol/terra) are covered by `live`.
+    assert m._api_pick_best("openai", ["gpt-5.5", "gpt-6-mini", "gpt-6-nano"]) == "gpt-5.5"
+    assert m._openai_sort_key("gpt-5.4-mini") is None
+    assert m._openai_sort_key("gpt-5-search-api") is None
+    assert m._openai_sort_key("text-embedding-3-large") is None
+    # o-series ranks below every gpt family.
+    assert m._api_pick_best("openai", ["o3-pro", "gpt-5"]) == "gpt-5"
+    print("[ok] _api_pick_best: version-ranked, newest family wins, weak variants excluded")
 
 
 def test_api_model_cache_roundtrip():

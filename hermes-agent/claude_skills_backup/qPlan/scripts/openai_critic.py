@@ -124,7 +124,9 @@ MODEL_PRIORITY = [
 ]
 
 # Last-resort literal if /v1/models is unreachable AND no cache exists.
-HARD_FALLBACK_MODEL = "gpt-4o"
+# Was gpt-4o; raised 2026-09-16 because gpt-4o is now three families behind and
+# the fallback should still be a usable critic, not the oldest thing that works.
+HARD_FALLBACK_MODEL = "gpt-5"
 
 
 def _list_models(api_key: str) -> list[str]:
@@ -138,7 +140,46 @@ def _list_models(api_key: str) -> list[str]:
     return [m["id"] for m in body.get("data", [])]
 
 
+# Variants that are cheaper/narrower than their family's general model. A
+# critic must never land on one just because its family number sorts high.
+_WEAK_VARIANT = re.compile(
+    r"(mini|nano|chat-latest|search|audio|realtime|image|tts|whisper"
+    r"|embedding|moderation|transcribe|preview|instruct)"
+)
+_DATED = re.compile(r"-\d{4}-\d{2}-\d{2}$")
+
+
+def _version_key(model_id: str):
+    """Rank a general-purpose OpenAI model by PARSED version; None if not one.
+
+    Added 2026-09-16: MODEL_PRIORITY above topped out at gpt-5.5 while the
+    account already served gpt-5.6-luna/sol/terra and gpt-6-astra, so the
+    "always pick the highest model" rule was quietly picking a stale one. A
+    hand-written list cannot keep up with OpenAI's release cadence; parsing the
+    version means the next family (gpt-7, ...) wins with no code change.
+    MODEL_PRIORITY is kept below purely as the fallback when nothing parses.
+    """
+    if _WEAK_VARIANT.search(model_id):
+        return None
+    m = re.match(r"^gpt-(\d+)(?:\.(\d+))?", model_id)
+    if m:
+        major, minor = int(m.group(1)), int(m.group(2) or 0)
+    elif re.match(r"^o\d+(-pro)?$", model_id):
+        # o-series predates the gpt-5 line: rank below every gpt family.
+        major, minor = 0, int(re.match(r"^o(\d+)", model_id).group(1))
+    else:
+        return None
+    pro = 1 if "-pro" in model_id else 0
+    undated = 0 if _DATED.search(model_id) else 1
+    # Same-version codenames (luna/sol/terra) carry no public ordering; the
+    # final key is alphabetical purely to make the pick deterministic.
+    return (major, minor, pro, undated, model_id)
+
+
 def _pick_best(available: list[str]) -> str | None:
+    ranked = [(k, m) for m in available if (k := _version_key(m)) is not None]
+    if ranked:
+        return max(ranked)[1]
     for pattern in MODEL_PRIORITY:
         matches = [m for m in available if pattern.match(m)]
         if not matches:
@@ -274,10 +315,15 @@ def call_openai(
         ],
         "response_format": {"type": "json_object"},
     }
-    # 2026-06-10: GPT-5+ models (gpt-5, gpt-5.1...gpt-5.5) reject any non-
-    # default temperature with HTTP 400. Only send temperature for legacy
-    # models that accept it.
-    if not model.startswith("gpt-5"):
+    # 2026-06-10: GPT-5+ models reject any non-default temperature with HTTP
+    # 400. Only send temperature for legacy models that accept it.
+    # 2026-09-16: this was `model.startswith("gpt-5")`, which is FALSE for
+    # gpt-6-astra -- the moment model discovery picked gpt-6 the critic would
+    # have sent temperature and taken a 400 on every call. Parse the family
+    # number instead of matching a literal prefix, so gpt-7+ stays covered.
+    _fam = re.match(r"^gpt-(\d+)", model)
+    _modern = (_fam and int(_fam.group(1)) >= 5) or re.match(r"^o\d", model)
+    if not _modern:
         payload["temperature"] = 0.3
     req = urllib.request.Request(
         "https://api.openai.com/v1/chat/completions",

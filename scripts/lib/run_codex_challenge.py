@@ -147,17 +147,23 @@ _API_PROVIDERS: dict[str, dict[str, Any]] = {
     "openai": {
         "base_url": "https://api.openai.com/v1",
         "key_envs": ("CODEX_API_KEY", "OPENAI_API_KEY"),
-        # Best-first; mirrors qPlan's openai_critic.py MODEL_PRIORITY.
+        # OpenAI ships new families faster than a hand-written list survives:
+        # this one stopped at gpt-5.5 while the account already served
+        # gpt-5.6-luna/sol/terra and gpt-6-astra (verified 2026-09-16), so the
+        # "always pick the highest" rule silently picked a stale model.
+        # OpenAI is therefore ranked by PARSED VERSION (_openai_sort_key), not
+        # by pattern order -- a future gpt-7 wins with no code change. This
+        # list is only the last-resort fallback if nothing parses.
         "priority": [
-            r"^gpt-5\.5(?:-\d{4}-\d{2}-\d{2})?$",
-            r"^gpt-5\.1(?:-\d{4}-\d{2}-\d{2})?$",
-            r"^gpt-5(?:-\d{4}-\d{2}-\d{2})?$",
-            r"^o3-pro(?:-\d{4}-\d{2}-\d{2})?$",
-            r"^o3(?:-\d{4}-\d{2}-\d{2})?$",
-            r"^gpt-4\.1(?:-\d{4}-\d{2}-\d{2})?$",
-            r"^gpt-4o(?:-\d{4}-\d{2}-\d{2})?$",
+            r"^gpt-6(?:-[a-z]+)?$",
+            r"^gpt-5\.6-[a-z]+$",
+            r"^gpt-5\.5(?:-pro)?$",
+            r"^gpt-5(?:\.\d+)?(?:-pro)?$",
+            r"^o3-pro$",
+            r"^o3$",
         ],
-        "fallback": "gpt-4o",
+        "version_ranked": True,
+        "fallback": "gpt-5",
     },
 }
 
@@ -219,8 +225,48 @@ def _api_list_models(provider: str, api_key: str) -> list[str]:
     return [m["id"] for m in body.get("data", []) if isinstance(m, dict) and m.get("id")]
 
 
+# Variants that are cheaper/narrower than the family's general model. A
+# reviewer must never silently land on one just because it sorts high.
+_WEAK_VARIANT = re.compile(
+    r"(mini|nano|chat-latest|search|audio|realtime|image|tts|whisper"
+    r"|embedding|moderation|transcribe|preview|instruct)"
+)
+_DATED = re.compile(r"-\d{4}-\d{2}-\d{2}$")
+
+
+def _openai_sort_key(model_id: str) -> tuple[int, int, int, int, str] | None:
+    """Rank a general-purpose OpenAI model by parsed version. Higher is better.
+
+    Returns None for anything that is not a general chat model, so weak
+    variants (mini/nano/search/audio/...) can never win. Ranking beats a
+    hand-written list here because OpenAI ships families faster than the list
+    gets updated -- gpt-6-astra and the gpt-5.6-* line both appeared while the
+    old list still topped out at gpt-5.5.
+    """
+    if _WEAK_VARIANT.search(model_id):
+        return None
+    m = re.match(r"^gpt-(\d+)(?:\.(\d+))?", model_id)
+    if m:
+        major, minor = int(m.group(1)), int(m.group(2) or 0)
+    elif re.match(r"^o\d+$", model_id) or re.match(r"^o\d+-pro$", model_id):
+        # o-series predates the gpt-5 line: rank below every gpt family.
+        major, minor = 0, int(re.match(r"^o(\d+)", model_id).group(1))
+    else:
+        return None
+    pro = 1 if "-pro" in model_id else 0
+    undated = 0 if _DATED.search(model_id) else 1
+    # Same-version codenames (gpt-5.6-luna/sol/terra) carry no public ordering,
+    # so the last key is alphabetical purely to make the pick deterministic.
+    return (major, minor, pro, undated, model_id)
+
+
 def _api_pick_best(provider: str, available: list[str]) -> str | None:
     """Highest-priority model present in `available` (best-first list)."""
+    if _API_PROVIDERS[provider].get("version_ranked"):
+        ranked = [(k, m) for m in available if (k := _openai_sort_key(m)) is not None]
+        if ranked:
+            return max(ranked)[1]
+        # nothing parsed -- fall through to the literal patterns below
     for pattern in _API_PROVIDERS[provider]["priority"]:
         matches = [m for m in available if re.match(pattern, m)]
         if not matches:
@@ -307,9 +353,11 @@ def call_api_llm(provider: str, prompt: str, timeout_sec: int = 300) -> dict[str
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
     }
-    # gpt-5.x and the o-series reject a custom temperature and the legacy
-    # max_tokens field with HTTP 400 -- send neither for those families.
-    if not re.match(r"^(gpt-5|o\d)", model):
+    # gpt-5+ (including gpt-6) and the o-series reject a custom temperature and
+    # the legacy max_tokens field with HTTP 400 -- send neither for them.
+    _fam = re.match(r"^gpt-(\d+)", model)
+    _modern_openai = (_fam and int(_fam.group(1)) >= 5) or re.match(r"^o\d", model)
+    if not _modern_openai:
         payload["temperature"] = 0.3
         # Reasoning models (deepseek-v4-pro et al.) spend this budget on
         # reasoning_tokens BEFORE emitting any content -- verified 2026-09-12:
