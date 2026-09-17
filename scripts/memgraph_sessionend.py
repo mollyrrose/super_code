@@ -3,7 +3,7 @@
 
 Level-5 ("always-on") memory layer, part 1 of 2. At session end this hook
 appends {session_id, transcript_path, cwd, ts} to ~/.claude/.memgraph_queue.json.
-Only sessions from the super_claude project root are queued -- cross-project
+Only sessions from the super_code project root are queued -- cross-project
 ingestion is explicitly blocked (P1 security finding from qRev).
 The queue is drained by the memgraph-ingest skill, which the companion
 UserPromptSubmit hook (memgraph_prompt_hook.py) triggers when the threshold
@@ -42,7 +42,7 @@ MIN_TRANSCRIPT_BYTES = int(os.environ.get("MEMGRAPH_MIN_TRANSCRIPT_BYTES", "2000
 # another project's session content into this project's memory -- blocked as
 # a P1 security finding. Override with MEMGRAPH_PROJECT_ROOT for testing.
 _PROJECT_ROOT = Path(
-    os.environ.get("MEMGRAPH_PROJECT_ROOT", "") or r"D:\projects\super_claude"
+    os.environ.get("MEMGRAPH_PROJECT_ROOT", "") or r"D:\Projects\super_code"
 ).resolve()
 
 

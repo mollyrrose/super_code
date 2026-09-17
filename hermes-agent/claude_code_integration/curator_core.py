@@ -252,7 +252,7 @@ def should_remind() -> Optional[str]:
         # moment Python is upgraded or the OS is reinstalled (C:\Python313 ->
         # C:\Python314 broke every drain until this was found, 2026-08-03).
         f"`\"{sys.executable or 'python'}\" "
-        "\"D:/Projects/super_claude/hermes-agent/claude_code_integration/mark_drained_cli.py\"` "
+        "\"D:/Projects/super_code/hermes-agent/claude_code_integration/mark_drained_cli.py\"` "
         "— stdin payload shape: "
         "`{\"session_ids\": [\"<id1>\", \"<id2>\", ...], \"candidates_written\": <M>}`. "
         "The script prints `{\"removed\": N, \"remaining\": ..., \"last_drain_at\": ...}` "

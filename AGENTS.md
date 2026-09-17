@@ -1,10 +1,10 @@
-# AGENTS.md -- super_claude project
+# AGENTS.md -- super_code project
 
 This file extends the global `~/.config/opencode/AGENTS.md` with rules specific to this repo.
 
 ## Project shape
 
-`super_claude` is a personal Claude Code / OpenCode setup:
+`super_code` is a personal Claude Code / OpenCode setup:
 - `scripts/` -- hook scripts, tokenjuice, coord, load_retry_runner, etc.
 - `hermes-agent/claude_code_integration/` -- curator, smart router, decision log modules
 - `claude_skills_backup/` -- ~165 Claude Code skills (markdown)
@@ -33,13 +33,13 @@ These scripts work without Claude Code and are useful from any terminal or as `b
 
 ```
 # Compress noisy command output before reading it
-python D:\projects\super_claude\scripts\tokenjuice.py -- git log --oneline -20
+python D:\Projects\super_code\scripts\tokenjuice.py -- git log --oneline -20
 
 # Compress a big file before passing it to the model
-python D:\projects\super_claude\scripts\tokenjuice_condense.py --file big_file.json
+python D:\Projects\super_code\scripts\tokenjuice_condense.py --file big_file.json
 
 # Load-gated retry runner for hang-prone commands
-python D:\projects\super_claude\scripts\load_retry_runner.py --timeout 30 -- npm test
+python D:\Projects\super_code\scripts\load_retry_runner.py --timeout 30 -- npm test
 ```
 
 ## State files (gitignored, don't commit)

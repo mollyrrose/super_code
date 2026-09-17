@@ -15,7 +15,7 @@
 
 $ErrorActionPreference = "Continue"
 
-$pidFile = "D:\Projects\super_claude\ai_video\.comfyui.pid"
+$pidFile = "D:\Projects\super_code\ai_video\.comfyui.pid"
 
 function Stop-IfRunning {
     param([int]$ProcId, [string]$Source)

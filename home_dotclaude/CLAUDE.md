@@ -17,7 +17,7 @@ How it actually works (read before assuming `/model` alone does it): the
 `/model` picker switches between the models the *current endpoint* exposes; it
 does not change provider. To run on GLM you START Claude Code with the z.ai
 endpoint configured via environment variables. The ready-made launcher does
-this: `D:\projects\super_claude\scripts\claude-glm.ps1` (also copied to
+this: `D:\Projects\super_code\scripts\claude-glm.ps1` (also copied to
 `~/.claude/scripts\claude-glm.ps1`).
 
 To activate when the key arrives:
@@ -688,7 +688,7 @@ Preserve the per-hook contracts when consolidating:
   command list (back up first), or gate the dispatcher behind a
   `*_DISABLE=1` env var.
 
-Reference implementation: `super_claude/scripts/hook_dispatch.py` (+ its
+Reference implementation: `super_code/scripts/hook_dispatch.py` (+ its
 `hook_dispatch_smoketest.py`), wired in `~/.claude/settings.json`. Don't pre-emptively
 consolidate a single-hook event or a non-hot-path event (`Stop`, `SessionEnd`,
 `PreCompact`) — measure first; this only pays off when 2+ hooks share a
@@ -1177,7 +1177,7 @@ rationale* so they aren't silently re-litigated later.
   same fields as JSON on stdin to the deterministic writer:
 
   ```
-  "C:\Python314\python.exe" "D:\Projects\super_claude\hermes-agent\claude_code_integration\decision_log_cli.py"
+  "C:\Python314\python.exe" "D:\Projects\super_code\hermes-agent\claude_code_integration\decision_log_cli.py"
   ```
 
   stdin shape: `{"title","decision","why","rejected_alternatives","revisit_if","project","outcome","session_id"}`
@@ -1285,7 +1285,7 @@ When the user types `/graphify`, invoke the Skill tool with `skill: "graphify"` 
 
 ### Fable legacy inheritance (FABLE5_LEGACY_INDEX.md)
 
-FABLE5_LEGACY.md (726 lines, installed at `~/.claude/fable-legacy/FABLE5_LEGACY.md` so it is reachable from EVERY project; source of truth: `D:\projects\super_claude\fable-legacy-4-opus_sonnet\FABLE5_LEGACY.md` -- re-copy on change) is Fable 5's distilled intelligence protocol: 36 failure-mode names, 12-item pre-send review, 8 character foundations, domain craft appendices. It is NEVER injected every turn. Instead:
+FABLE5_LEGACY.md (726 lines, installed at `~/.claude/fable-legacy/FABLE5_LEGACY.md` so it is reachable from EVERY project; source of truth: `D:\Projects\super_code\fable-legacy-4-opus_sonnet\FABLE5_LEGACY.md` -- re-copy on change) is Fable 5's distilled intelligence protocol: 36 failure-mode names, 12-item pre-send review, 8 character foundations, domain craft appendices. It is NEVER injected every turn. Instead:
 - Load `~/.claude/fable-legacy/FABLE5_LEGACY_INDEX.md` (small -- chapter map + task-type routing table + all 36 names listed). As of 2026-08-29, qRem instead reads the FULL FABLE5_LEGACY.md at orientation every session regardless of model (the on-demand chapter-load never fired in practice), so the index is no longer qRem's entry point.
 - Pull chapters ON DEMAND when the task type matches: coding/agentic -> Ch 8A; before shipping any deliverable -> Ch 4 (short circuit: items 1, 2, 7, 12); mid-task failure -> Ch 6 by name; under pushback -> Ch 7.5; any task -> Ch 1. Full routing table in the index file.
 - Session-level inheritance: when the active model is Opus/Sonnet (not Fable-class), consult the relevant chapter. When the active model IS Fable 5, skip -- it is the source.

@@ -1,4 +1,4 @@
-# super_claude
+# super_code
 
 > Personal Claude Code setup that runs on your **Claude Pro / Max subscription** for inference, extended with a ~165-item skill bundle, automatic self-curate, smart prompt router, multi-tier automatic code review, and a custom statusline. No separate Anthropic or OpenAI API key needed for the core features.
 
@@ -9,7 +9,7 @@ This README covers the full feature catalog of the project. For original Hungari
 ## Repository layout
 
 ```
-super_claude/
+super_code/
 - CLAUDE.md                          (project-level rules, extends the global ~/.claude/CLAUDE.md)
 - README.md                          (this file)
 - LICENSE                            (Apache 2.0, inherited from upstream Hermes)
@@ -122,7 +122,7 @@ git worktree add .worktrees/feat-x -b feat-x          # new branch
 git worktree add .worktrees/feat-x feat-x             # existing branch
 
 # in a fresh Claude window
-cd D:\projects\super_claude\.worktrees\feat-x
+cd D:\Projects\super_code\.worktrees\feat-x
 claude
 
 # cleanup when the branch is merged or abandoned
@@ -207,8 +207,8 @@ The decision stream is fed by the global `CLAUDE.md` "Decision log" convention: 
 
 ```powershell
 # 1. Clone wherever you want it to live permanently
-git clone git@github.com:mollyrrose/super_claude.git D:\projects\super_claude
-cd D:\projects\super_claude
+git clone git@github.com:mollyrrose/super_code.git D:\Projects\super_code
+cd D:\Projects\super_code
 
 # 2. Install the skill bundle and wire the hooks
 python hermes-agent\claude_code_integration\install_into_claude_code.py

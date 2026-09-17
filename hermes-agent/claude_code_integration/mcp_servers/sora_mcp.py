@@ -22,7 +22,7 @@ API key resolution (first non-empty wins):
 2. File at ~/.claude/.openai_api_key (single line, gitignored).
 
 Register with Claude Code:
-    claude mcp add sora-cloud -- python "D:/projects/super_claude/hermes-agent/claude_code_integration/mcp_servers/sora_mcp.py"
+    claude mcp add sora-cloud -- python "D:/Projects/super_code/hermes-agent/claude_code_integration/mcp_servers/sora_mcp.py"
 
 Environment overrides:
 - SORA_OUTPUT_DIR    default ~/.cache/sora_outputs/

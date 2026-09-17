@@ -69,7 +69,7 @@ foreach ($f in @('CLAUDE.md', 'INSTALL.md')) {
 Write-Host "[ok] CLAUDE.md + INSTALL.md copied"
 
 # --- memory ---
-$memSrc = Join-Path $ClaudeHome 'projects\D--Projects-super-claude\memory'
+$memSrc = Join-Path $ClaudeHome 'projects\D--Projects-super-code\memory'
 if (Test-Path $memSrc) {
   $memDst = Join-Path $dst 'memory'
   New-Item -ItemType Directory -Force -Path $memDst | Out-Null

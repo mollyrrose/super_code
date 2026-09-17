@@ -1,10 +1,10 @@
-# CLAUDE.md — super_claude project
+# CLAUDE.md — super_code project
 
 This file extends the global `~/.claude/CLAUDE.md` with rules specific to this repo.
 
 ## Project shape
 
-`super_claude` is the personal Claude Code setup: hook scripts in `~/.claude/scripts/`, the curator and skill-lifecycle Python modules under `hermes-agent/claude_code_integration/`, and a `claude_skills_backup/` of ~165 skills that get installed into `~/.claude/skills/`. See `README.md` for the full feature catalog.
+`super_code` is the personal Claude Code setup: hook scripts in `~/.claude/scripts/`, the curator and skill-lifecycle Python modules under `hermes-agent/claude_code_integration/`, and a `claude_skills_backup/` of ~165 skills that get installed into `~/.claude/skills/`. See `README.md` for the full feature catalog.
 
 ## Preflight checklist before implementation (pre-code, not a substitute for /qRev)
 
@@ -198,9 +198,9 @@ Changes to these scripts should:
 
 The generic rules — `.worktrees/<branch>/` dual-window workflow, no sibling-copies of the project folder, no directories outside the project root, and the per-window TODO ownership / liveness / takeover protocol — live in the global `~/.claude/CLAUDE.md` under "Project directory boundaries and dual-window safety". They apply here unchanged.
 
-Super_claude-specific notes:
+Super_code-specific notes:
 - `.worktrees/` is already listed in this repo's `.gitignore`.
-- The canonical worktree path here is `D:\projects\super_claude\.worktrees\<branch>\`.
+- The canonical worktree path here is `D:\Projects\super_code\.worktrees\<branch>\`.
 
 ## Level-5 memory layer (memgraph + graphify)
 
@@ -237,7 +237,7 @@ Full briefing: `exclude/SYSTEM_STRATEGIES/memory_levels_briefing.md`.
 - `~/.claude/.memgraph_queue.json`, `.memgraph_state.json` — level-5 memory ingestion queue/state; `~/.claude/memory-graph/` — the generated memory knowledge graph.
 - `~/.claude/.statusline_baselines.json` — per-session context-bar baselines.
 - `~/.claude/.ecc-session-bridge/` — session metrics for the statusline.
-- `D:\projects\super_claude\hermes-agent\claude_code_integration\ruvector.db` and the top-level `ruvector.db` — embeddings / skill state.
+- `D:\Projects\super_code\hermes-agent\claude_code_integration\ruvector.db` and the top-level `ruvector.db` — embeddings / skill state.
 
 All of the above are listed in `.gitignore` and must stay there.
 

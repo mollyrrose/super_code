@@ -78,10 +78,10 @@ if (-not $NoSettings) {
 }
 
 # --- memory (project-key folder name comes from this repo's absolute path, not the
-#     username, so it needs no tokenization -- always D--Projects-super-claude here) ---
+#     username, so it needs no tokenization -- always D--Projects-super-code here) ---
 $memSrc = Join-Path $src 'memory'
 if (Test-Path $memSrc) {
-  $memDst = Join-Path $ClaudeHome 'projects\D--Projects-super-claude\memory'
+  $memDst = Join-Path $ClaudeHome 'projects\D--Projects-super-code\memory'
   New-Item -ItemType Directory -Force -Path $memDst | Out-Null
   Copy-Item "$memSrc\*" $memDst -Recurse -Force
   Write-Host "[ok] memory restored"

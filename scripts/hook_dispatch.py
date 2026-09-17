@@ -69,7 +69,7 @@ _SCRIPTS_DIR = Path(__file__).resolve().parent
 _CCI_DIR = Path(
     os.environ.get(
         "CC_HOOK_CCI_DIR",
-        r"D:\Projects\super_claude\hermes-agent\claude_code_integration",
+        r"D:\Projects\super_code\hermes-agent\claude_code_integration",
     )
 )
 

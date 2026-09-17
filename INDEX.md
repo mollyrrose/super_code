@@ -1,4 +1,4 @@
-# INDEX — super_claude
+# INDEX — super_code
 
 Orientation map for a fresh session. For the full feature catalog see `README.md`.
 
@@ -6,7 +6,7 @@ Orientation map for a fresh session. For the full feature catalog see `README.md
 
 Every session, from the first turn, the model applies the token compressors by
 default as a reflex — this is a standing rule, loaded here + in `CLAUDE.md`, so a
-fresh clone of super_claude gets it automatically. There is nothing to "start"
+fresh clone of super_code gets it automatically. There is nothing to "start"
 (they are on-demand scripts, not daemons); "always on" means the model reaches
 for them continuously without being asked:
 
@@ -26,7 +26,7 @@ TOKEN DISCIPLINE block.
 
 ## What this is
 
-`super_claude` is the personal Claude Code setup: hook scripts, the curator /
+`super_code` is the personal Claude Code setup: hook scripts, the curator /
 skill-lifecycle Python, a backup of the installed skills, and the project-level
 rules in `CLAUDE.md`. Editing here changes how every Claude Code session behaves.
 
@@ -94,7 +94,7 @@ so the repo is machine-agnostic and the username is never published.
   substitutes their own username back in. (This doc deliberately does not spell
   out the real name — that would re-leak it.)
 - Note: other machine-specific roots that are NOT the username (e.g.
-  `C:\Python313`, `D:\projects\super_claude`) are left as-is — only the user
+  `C:\Python313`, `D:\Projects\super_code`) are left as-is — only the user
   segment is placeholdered.
 - SECRETS: the live `settings.json` carries real API keys in `env`
   (`OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, and any future provider key). The

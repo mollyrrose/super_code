@@ -81,7 +81,7 @@ sandboxed/one-off context — never `headroom init`, the proxy, or the plugin.
 
 A possible upgrade to the tokenjuice opt-in slot (compress known-noisy output). The
 gate did its job (blocked first, audited second). Parked as awareness,
-`adoption: AUDITED-CLEAN-but-do-not-install`. Source clone lives under the super_claude
+`adoption: AUDITED-CLEAN-but-do-not-install`. Source clone lives under the super_code
 repo's gitignored `.scratch/headroom-audit/` for re-inspection; safe to delete (text
 only, nothing executed).
 

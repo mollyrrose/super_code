@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Set up the super_claude AI video pipeline: ComfyUI + LTX-Video locally, plus
+    Set up the super_code AI video pipeline: ComfyUI + LTX-Video locally, plus
     MCP servers exposing local ComfyUI and OpenAI Sora to Claude Code.
 
 .DESCRIPTION

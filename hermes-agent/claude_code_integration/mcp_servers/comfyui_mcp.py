@@ -23,11 +23,11 @@ Dependencies:
 - stdlib only otherwise (urllib, json, time, pathlib)
 
 Register with Claude Code:
-    claude mcp add comfyui-local -- python "D:/projects/super_claude/hermes-agent/claude_code_integration/mcp_servers/comfyui_mcp.py"
+    claude mcp add comfyui-local -- python "D:/Projects/super_code/hermes-agent/claude_code_integration/mcp_servers/comfyui_mcp.py"
 
 Environment overrides (optional):
 - COMFYUI_URL          default http://127.0.0.1:8188
-- COMFYUI_WORKFLOW_DIR default D:/projects/super_claude/ai_video/workflows
+- COMFYUI_WORKFLOW_DIR default D:/Projects/super_code/ai_video/workflows
 - COMFYUI_OUTPUT_DIR   default <comfyui repo>/output  (used to resolve returned filenames to absolute paths)
 - COMFYUI_POLL_TIMEOUT default 900 (seconds, 15 min — Tier C 5s clip takes 5-15 min)
 """
@@ -63,13 +63,13 @@ COMFYUI_URL = os.environ.get("COMFYUI_URL", "http://127.0.0.1:8188").rstrip("/")
 WORKFLOW_DIR = Path(
     os.environ.get(
         "COMFYUI_WORKFLOW_DIR",
-        "D:/projects/super_claude/ai_video/workflows",
+        "D:/Projects/super_code/ai_video/workflows",
     )
 )
 OUTPUT_DIR = Path(
     os.environ.get(
         "COMFYUI_OUTPUT_DIR",
-        "D:/projects/super_claude/ai_video/comfyui/output",
+        "D:/Projects/super_code/ai_video/comfyui/output",
     )
 )
 POLL_TIMEOUT = int(os.environ.get("COMFYUI_POLL_TIMEOUT", "900"))

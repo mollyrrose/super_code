@@ -7,7 +7,7 @@ Env overrides (all optional):
   CLAUDE_CONFIG_DIR          -- Claude config base dir (default: ~/.claude);
                                 MUST match what the writing hooks use.
   BRAIN_QUERY_MEMORY_DIR     -- override the memory dir
-                                (default: $CLAUDE_CONFIG_DIR/projects/D--projects-super-claude/memory)
+                                (default: $CLAUDE_CONFIG_DIR/projects/D--Projects-super-code/memory)
   BRAIN_QUERY_ROUTER_FILE    -- override ~/.claude/.smart_router_eval.jsonl path
   BRAIN_QUERY_DECISIONS_FILE -- override ~/.claude/.decision_log.jsonl path
   BRAIN_QUERY_VERDICTS_FILE  -- override ~/.claude/.qrev_verdict_log.jsonl path
@@ -40,7 +40,7 @@ from typing import Any
 
 # Respect CLAUDE_CONFIG_DIR so this reader and the hook writers point at the same files.
 CLAUDE_DIR = pathlib.Path(os.environ.get("CLAUDE_CONFIG_DIR", str(pathlib.Path.home() / ".claude")))
-_default_memory = CLAUDE_DIR / "projects" / "D--projects-super-claude" / "memory"
+_default_memory = CLAUDE_DIR / "projects" / "D--Projects-super-code" / "memory"
 MEMORY_DIR = pathlib.Path(os.environ.get("BRAIN_QUERY_MEMORY_DIR", str(_default_memory)))
 STREAMS: dict[str, pathlib.Path] = {
     "router": pathlib.Path(

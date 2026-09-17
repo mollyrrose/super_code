@@ -13,9 +13,9 @@
   without starting a second instance.
 
 .OUTPUTS
-  Writes the launched PID to D:\Projects\super_claude\ai_video\.comfyui.pid
-  Writes stdout to D:\Projects\super_claude\ai_video\.comfyui.log
-  Writes stderr to D:\Projects\super_claude\ai_video\.comfyui.err
+  Writes the launched PID to D:\Projects\super_code\ai_video\.comfyui.pid
+  Writes stdout to D:\Projects\super_code\ai_video\.comfyui.log
+  Writes stderr to D:\Projects\super_code\ai_video\.comfyui.err
 
 .NOTES
   Matches the flags from ai_video\start_comfyui.bat (Tier C profile).
@@ -25,7 +25,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$root      = "D:\Projects\super_claude\ai_video"
+$root      = "D:\Projects\super_code\ai_video"
 $comfyDir  = Join-Path $root "comfyui"
 $python    = Join-Path $comfyDir ".venv\Scripts\python.exe"
 $ffmpegDir = Join-Path $root "ffmpeg"
