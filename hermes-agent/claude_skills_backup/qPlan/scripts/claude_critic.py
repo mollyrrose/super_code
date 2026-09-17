@@ -97,9 +97,13 @@ _GLM_ENV_KEYS = (
 
 # --- pure helpers (unit-testable, no network/subprocess) ------------------
 
-def build_prompt(task: str, plan: str, ledger: list) -> str:
+def build_prompt(task: str, plan: str, ledger: list, system_prompt: str = CRITIC_PROMPT) -> str:
+    # Callers outside qPlan (e.g. family-setting's field-voice lens) pass their
+    # own system_prompt to replace the qPlan-specific CRITIC_PROMPT — otherwise
+    # their instructions only ride along as inert JSON data in the user turn
+    # and the qPlan verdict/suggestions framing silently wins.
     payload = json.dumps({"task": task, "plan": plan, "ledger": ledger}, ensure_ascii=False)
-    return f"{CRITIC_PROMPT}\n\nINPUT:\n{payload}\n\nOutput ONLY the JSON object."
+    return f"{system_prompt}\n\nINPUT:\n{payload}\n\nOutput ONLY the JSON object."
 
 
 def sanitized_env(env: dict) -> dict:
@@ -296,7 +300,12 @@ def main() -> None:
         sys.stderr.write(f"claude_critic: bad JSON on stdin — {e}\n")
         sys.exit(2)
 
-    prompt = build_prompt(req_in.get("task", ""), req_in.get("plan", ""), req_in.get("ledger", []))
+    prompt = build_prompt(
+        req_in.get("task", ""),
+        req_in.get("plan", ""),
+        req_in.get("ledger", []),
+        req_in.get("system_prompt") or CRITIC_PROMPT,
+    )
     override = req_in.get("model")
 
     if backend == "api":

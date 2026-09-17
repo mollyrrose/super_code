@@ -78,22 +78,50 @@ Mindegyik 2-3 mondatot ad vissza, plusz javasolt DYN-azonosítókat.
 
 ## Kereszt-modell hang
 
-Egy MÁSIK gyártó modellje (jelenleg OpenAI) ugyanazt a tablót és
-kör-jelentéseket kapja, és önálló olvasatot ad. Ez az egyetlen pont, ahol nem
-Claude néz Claude-ra.
+Egy MÁSIK gyártó modellje ugyanazt a tablót és kör-jelentéseket kapja, és
+önálló olvasatot ad. Ez az egyetlen pont, ahol nem Claude néz Claude-ra.
+
+**Melyik másik gyártó — ez attól függ, milyen CLI-ben fut az ülés, sosem a
+sajátjától**: a vezető (a session-t hosztoló CLI) sosem kérdezi meg saját
+magát, mert az nem "másik" hang volna.
+
+| Hoszt (a vezető CLI-je) | Próbált sorrend |
+|---|---|
+| Claude Code | DeepSeek, majd OpenAI (ChatGPT) |
+| Codex | Claude, majd DeepSeek |
+
+A hoszt-felismerés a `CLAUDECODE` környezeti változóra támaszkodik (ugyanaz a
+jel, amit a repo más helye — pl. `last30days/scripts/lib/doctor.py` — is
+Claude Code azonosítására használ): ha be van állítva, a hoszt "claude",
+egyébként "codex". Ha az ülés egy harmadik CLI-ből fut (Cursor, Gemini CLI,
+nyers shell), ez tévesen "codex"-nek látszik — ilyenkor állítsd be kézzel a
+`FAMILY_SETTING_HOST` környezeti változót (`claude` vagy `codex`).
 
 - Futtatás a skill sajat konyvtarabol:
   `python scripts/run_field_voice.py --allapot <fajl> --elhangzott <fajl>`
   A ket fajlt a kor vegen irod ki (pl. `.scratch/family-setting/allapot.txt`
   es `.../elhangzott.txt`). Argumentum nelkul, ures stdinnel nem fut.
+- A script a próbált sorrend első elemével kezd, és a következő jelöltre lép,
+  ha az adott szolgáltató kulcsa hiányzik, kerete kimerült, vagy nem
+  válaszolt időben. Csak akkor némul el a lencse, ha **mindegyik** jelölt
+  elbukott — a fejléc (`[kulso hang: <szolgaltato>/<modell>]`) mutatja, melyik
+  válaszolt.
 - Ritmus: minden 2-3. körben, és **mindig a rendezett zárás előtt**.
 - Ha nem elérhető: az ülés megy tovább, de a vezető **kimondja**, hogy ebben a
   körben nem volt külső hang.
 
-Őszinte leltár (2026-08-22): OpenAI elérhető; DeepSeek kulcsa megvan, de a
-kerete kimerült; GLM, SubQ nincs beállítva; a helyi Ornith nem fut. Tehát a
-"sok AI" gyakorlatban: **sok független Claude-kontextus + egy másik gyártó
-modellje**. Ne állítsd többnek.
+Őszinte leltár (2026-09-17): a script maga a `qPlan/scripts/*_critic.py`
+providereket hívja újra, mindegyiknek átadva a saját `system_prompt`-ját (a
+fenti PROMPT-ot) — enélkül a critic-scriptek bedrótozott qPlan-promptja
+(plan-review JSON) nyerne, és a válasz a tér leírása helyett egy zagyva
+plan-verdiktet adna vissza. Melyik jelölt éri el ténylegesen a hálózatot azon
+múlik, milyen kulcsok/session-ök élnek éppen (`OPENAI_API_KEY`,
+`DEEPSEEK_API_KEY`, `ANTHROPIC_API_KEY` vagy a bejelentkezett `claude`
+CLI-munkamenet) — ezt a jelen pillanatban nem soroljuk fel itt, mert percek
+alatt elévül; a fejléc mindig megmutatja, melyik válaszolt ténylegesen.
+GLM, SubQ, a helyi Ornith nincs bekötve ebbe a listába. Tehát a "sok AI"
+gyakorlatban: **sok független Claude-kontextus + egy, a hoszttól eltérő
+gyártó modellje**. Ne állítsd többnek.
 
 ## Szintézis — a vezető dolga
 
@@ -113,14 +141,19 @@ A vezető NEM átlagol. Szabályok:
 
 | Mód | Mit indít körönként | Nagyságrend |
 |---|---|---|
-| `teljes` | minden képviselő külön ügynök + 5 lencse + kereszt-modell | 8-14 hívás/kör |
-| `kozepes` (alap) | a 3-4 legaktívabb képviselő + 3 lencse + kereszt-modell a fordulópontokon | 6-8 hívás/kör |
+| `teljes` (alap) | minden képviselő külön ügynök + 5 lencse + kereszt-modell | 8-14 hívás/kör |
+| `kozepes` | minden élő képviselő, aki szólni/mozdulni akar, külön ügynök + 3 lencse + kereszt-modell a fordulópontokon | a felálláshoz igazodik, nincs fix felső korlát (2026-09-09-ig 3-4 képviselőre volt fixálva) |
 | `egy` | a vezető szólaltat meg mindenkit (az alap-protokoll) | 0 extra hívás |
 
 Egy 9 körös ülés `teljes` módban nagyságrendileg 70-120 ügynökhívás. Ezt
-mondd meg a felhasználónak az elején, ne utólag.
+mondd meg a felhasználónak az elején, ne utólag. `kozepes` módban a
+felhasználó 2026-09-09-i kérésére eltöröltük a körönkénti képviselő-korlátot
+is, ezért ott a hívásszám a felálláshoz igazodik — nagy (10+ képviselős)
+tablóknál ez `teljes`-hez közelítő nagyságrendet is elérhet.
 
-Alapértelmezés: `kozepes`. A felhasználó kérheti a `teljes`-t.
+Alapértelmezés (2026-09-09-től): `teljes`. Korábban `kozepes` volt az alap;
+a felhasználó explicit kérésére váltottunk. A felhasználó kérheti a
+`kozepes`-t, ha kevesebb hívást/időt akar.
 
 ## Biztonsági invariánsok — ezek nem alkuképesek
 

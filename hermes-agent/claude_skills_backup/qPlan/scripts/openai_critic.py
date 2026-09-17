@@ -298,13 +298,14 @@ def call_openai(
     plan: str,
     ledger: list,
     depth: int = 0,
+    system_prompt: str = CRITIC_PROMPT,
 ) -> dict:
     global _total_chunks_submitted
     _total_chunks_submitted += 1
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": CRITIC_PROMPT},
+            {"role": "system", "content": system_prompt},
             {
                 "role": "user",
                 "content": json.dumps(
@@ -375,7 +376,7 @@ def call_openai(
             )
             time.sleep(sleep_s)
             sub_verdicts = [
-                call_openai(api_key, model, task, p, ledger, depth + 1)
+                call_openai(api_key, model, task, p, ledger, depth + 1, system_prompt)
                 for p in parts
             ]
             merged = merge_verdicts(sub_verdicts)
@@ -556,7 +557,9 @@ def do_login() -> None:
     sys.exit(2)
 
 
-def call_openai_browser(task: str, plan: str, ledger: list) -> dict:
+def call_openai_browser(
+    task: str, plan: str, ledger: list, system_prompt: str = CRITIC_PROMPT
+) -> dict:
     sync_playwright = _import_playwright()
     if not BROWSER_PROFILE_DIR.exists():
         sys.stderr.write(
@@ -566,7 +569,7 @@ def call_openai_browser(task: str, plan: str, ledger: list) -> dict:
         sys.exit(2)
     headless = os.environ.get("QPLAN_OPENAI_BROWSER_HEADLESS") == "1"
     message = (
-        CRITIC_PROMPT
+        system_prompt
         + "\n\nINPUT (task, plan, ledger as JSON):\n"
         + json.dumps(
             {"task": task, "plan": plan, "ledger": ledger}, ensure_ascii=False
@@ -628,10 +631,15 @@ def main() -> None:
     task = req_in.get("task", "")
     plan = req_in.get("plan", "")
     ledger = req_in.get("ledger", [])
+    # Callers outside qPlan (e.g. family-setting's field-voice lens) pass their
+    # own system_prompt to replace the qPlan-specific CRITIC_PROMPT — otherwise
+    # their instructions only ride along as inert JSON data in the user turn
+    # and the qPlan verdict/suggestions framing silently wins.
+    system_prompt = req_in.get("system_prompt") or CRITIC_PROMPT
 
     if backend == "browser":
         try:
-            verdict = call_openai_browser(task, plan, ledger)
+            verdict = call_openai_browser(task, plan, ledger, system_prompt=system_prompt)
         except json.JSONDecodeError as e:
             sys.stderr.write(
                 "openai_critic[browser]: ChatGPT reply was not valid JSON "
@@ -655,12 +663,12 @@ def main() -> None:
         )
         sys.exit(2)
 
-    # stdin (task/plan/ledger) was already read at the top of main().
-    # Explicit override locks the model; otherwise auto-discover.
+    # stdin (task/plan/ledger/system_prompt) was already read at the top of
+    # main(). Explicit override locks the model; otherwise auto-discover.
     model = req_in.get("model") or discover_model(api_key)
 
     try:
-        verdict = call_openai(api_key, model, task, plan, ledger)
+        verdict = call_openai(api_key, model, task, plan, ledger, system_prompt=system_prompt)
     except _BudgetExhausted:
         # The key is valid but its balance/quota is dead. Per the user's policy,
         # do NOT stop the round — fall back to the browser (ChatGPT web session),
@@ -678,7 +686,7 @@ def main() -> None:
             "mutes for not being logged in.\n"
         )
         try:
-            verdict = call_openai_browser(task, plan, ledger)
+            verdict = call_openai_browser(task, plan, ledger, system_prompt=system_prompt)
         except json.JSONDecodeError as je:
             sys.stderr.write(
                 "openai_critic[browser-fallback]: ChatGPT reply was not valid "
