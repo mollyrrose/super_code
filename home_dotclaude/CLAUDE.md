@@ -1201,7 +1201,9 @@ build."
     or repair skills with zero uses?
   - curator + rev-learn actually producing learnings
     (`.hermes_curator_state.json`, `.rev_learn_state.json`) — or silently idle?
-  - model-router predictions sane (`.smart_router_eval.jsonl`)?
+  - model-router predictions sane? (`.smart_router_eval.jsonl` is FROZEN since
+    2026-09-23 -- logging is opt-in via `SMART_ROUTER_EVAL_LOG=1`; judge the
+    tier hint by hand, and do not read "no new rows" as a broken hook.)
   - memory + decision-log entries present and current for active projects?
 
 ## GPU rig (6x RTX 2060 SUPER) -- shared across every project

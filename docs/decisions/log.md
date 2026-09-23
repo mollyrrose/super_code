@@ -3,6 +3,43 @@
 Newest entry on top. One short ADR-style entry per non-trivial / hard-to-reverse
 decision. See `~/.claude/CLAUDE.md` "Decision log" for the format.
 
+### 2026-09-23 - Smart-router skill suggestion deleted; eval logging made opt-in
+Decision: Delete the smart router's skill-suggestion branch outright
+(`classify_prompt`, `format_suggestion`, all `_rule_*` functions, the
+`SMART_ROUTER_SUGGEST_INJECT` switch, the `suggested_skill_or_null` log column and
+the two test classes covering them). Keep the model-tier + mode/effort hint exactly
+as it is. Flip the eval-log writer from always-on to opt-in
+(`SMART_ROUTER_EVAL_LOG=1`, default OFF), keeping the writer and its privacy
+contract intact behind the switch. Do not build a learned router (Jev or
+Model2Vec) now.
+Why: Measured, not assumed. Of the joinable eval rows where the router predicted a
+skill, the user invoked the predicted skill 0 times -- it had been predicting in a
+label space (/hunt, /think, /rev) disjoint from the one actually in use (qRev,
+qPlan, hermes-curate), and its injection had already been off since 2026-08-29, so
+the code was dead. For the tier half: only 5 rows out of 6577 have both a router
+tier prediction and a real tier choice in the same turn, so the live router is
+effectively unmeasurable (n=5, not a 40% accuracy problem). And the prompt text
+carries no learnable tier signal -- naive Bayes leave-one-out scored 48.1% against
+a 56.8% always-"sonnet" majority baseline (n=81), i.e. WORSE than a constant. The
+ceiling is low by construction: 84.6% of turns start no subagent at all, so there
+is nothing to route. 3.5 months of logging bought 6577 rows / ~2 MB for 81 usable
+labels; the stream is not earning its cost.
+Rejected alternatives: (a) Build the learned router on Jev -- rejected: the
+bottleneck is absence of volume (~40 decisions/day, 34 of them "do not delegate"),
+not classifier quality; a faster/cheaper classifier answers a non-existent
+bottleneck. (b) Keep the dead skill branch behind its off switch "in case" --
+rejected: it is unreachable code whose predictions are provably worthless, and it
+kept a stale import contract that broke the whole hook mid-edit. (c) Delete the
+tier hint too -- rejected: it is cheap, rule-based, and harmless; unmeasurable is
+not the same as harmful. (d) Delete the 6577 historical rows -- rejected:
+`hermes_router_baseline.py` and `scripts/brain_query.py` read them, and the file is
+the evidence behind this entry.
+Revisit if: a genuinely high-volume classification workload appears (hundreds of
+files/emails/tickets per batch), in which case Model2Vec is the right choice over
+Jev because it is local with no network round-trip; OR delegation rate rises far
+above ~15% of turns so there is actually something to route; OR a labelling need
+appears that justifies re-arming `SMART_ROUTER_EVAL_LOG=1`.
+
 ### 2026-09-08 - Evaluated four GitHub repos for adoption; adopted none
 Decision: After a capability-coverage check, adopt NONE of the four repos raised
 (`askjo/camofox-browser`, `cathrynlavery/diagram-design`, `affaan-m/ECC`,

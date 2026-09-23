@@ -1,9 +1,19 @@
 ﻿#!/usr/bin/env python3
-"""Claude Code UserPromptSubmit hook — smart-router skill suggestion.
+"""Claude Code UserPromptSubmit hook — smart-router model-tier hint.
 
-Reads the JSON payload Claude Code passes on stdin, classifies the user's
-prompt via smart_router_rules.classify_prompt, and (if confident) emits a
-hookSpecificOutput.additionalContext JSON to surface the suggested skill.
+Reads the JSON payload Claude Code passes on stdin, recommends a subagent
+model tier (plus mode/effort) via smart_router_rules, and emits a
+hookSpecificOutput.additionalContext JSON carrying that hint alongside the
+standing token/fleet discipline.
+
+SCOPE NOTE (2026-09-23) — the skill-suggestion branch was REMOVED, along with
+its SMART_ROUTER_SUGGEST_INJECT switch and the always-on eval logging that fed
+it. Measured: of the joinable eval rows where the router predicted a skill, the
+user invoked the predicted skill 0 times, and the prompt text carries no
+learnable tier signal (naive Bayes 48.1% vs a 56.8% always-"sonnet" baseline,
+n=81) because 85% of turns delegate to no subagent at all. The injection had
+already been off since 2026-08-29; this removed the dead code behind it. Full
+evidence: docs/decisions/log.md.
 
 Designed to run side-by-side with curator_prompt_hook.py — Claude Code
 concatenates the additionalContext from every registered UserPromptSubmit
@@ -19,15 +29,12 @@ import hashlib
 import json
 import os
 import sys
-import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from smart_router_rules import (  # noqa: E402
-    classify_prompt,
-    format_suggestion,
     format_model_tier,
     format_mode_effort,
     recommend_model_tier,
@@ -51,6 +58,18 @@ EVAL_LOG_PATH = (
     Path(os.environ.get("CLAUDE_CONFIG_DIR", str(Path.home() / ".claude")))
     / ".smart_router_eval.jsonl"
 )
+
+def _eval_log_enabled() -> bool:
+    """Eval-log writing is OPT-IN and OFF by default (2026-09-23).
+
+    3.5 months of always-on logging produced 6577 rows (~2 MB) and only 81
+    usable labels, on which a learned router scored WORSE than always
+    guessing "sonnet" -- the stream was not earning its cost. The writer and
+    its privacy contract are kept intact behind this switch so it can be
+    re-armed cheaply if a real labelling need appears.
+    """
+    return os.environ.get("SMART_ROUTER_EVAL_LOG", "0").strip() in ("1", "true", "True")
+
 
 _MODE_EFFORT_GATE: bool | None = None
 
@@ -85,7 +104,7 @@ def _slugify_project(cwd: str) -> str:
     return out
 
 
-def _log_eval_row(prompt_text: str, suggestion, payload: dict, tier=None, me=None) -> None:
+def _log_eval_row(prompt_text: str, payload: dict, tier=None, me=None) -> None:
     """Append one hashed eval row to ~/.claude/.smart_router_eval.jsonl.
 
     Privacy: stores sha256(prompt)[:16] and a word count; never the body.
@@ -100,7 +119,6 @@ def _log_eval_row(prompt_text: str, suggestion, payload: dict, tier=None, me=Non
         "project": _slugify_project(cwd),
         "prompt_hash": hashlib.sha256(prompt_text.encode("utf-8")).hexdigest()[:16],
         "prompt_len_words": len(prompt_text.split()),
-        "suggested_skill_or_null": suggestion.skill if suggestion is not None else None,
         "suggested_model_or_null": tier.model if tier is not None else None,
         "suggested_mode_or_null": me.mode if me is not None else None,
         "suggested_effort_or_null": me.effort if me is not None else None,
@@ -150,12 +168,6 @@ def main() -> int:
         payload_obj = {}
 
     try:
-        suggestion = classify_prompt(prompt_text)
-    except Exception:
-        traceback.print_exc(file=sys.stderr)
-        return 0
-
-    try:
         tier = recommend_model_tier(prompt_text)
     except Exception:
         tier = None
@@ -165,19 +177,13 @@ def main() -> int:
     except Exception:
         me = None
 
-    try:
-        _log_eval_row(prompt_text, suggestion, payload_obj, tier, me)
-    except Exception:
-        pass  # logger must never block the prompt
+    if _eval_log_enabled():
+        try:
+            _log_eval_row(prompt_text, payload_obj, tier, me)
+        except Exception:
+            pass  # logger must never block the prompt
 
     hints: list[str] = []
-    # Visible skill-suggestion injection is OFF by default (2026-08-29): a
-    # transcript audit found it fired every turn but was acted on 0 times across
-    # 1613 sessions, so it only spent context budget. The prediction is still
-    # recorded by _log_eval_row above (data for a future learned router), which
-    # is the part that accumulates value. Re-enable with SMART_ROUTER_SUGGEST_INJECT=1.
-    if suggestion is not None and os.environ.get("SMART_ROUTER_SUGGEST_INJECT", "0").strip() in ("1", "true", "True"):
-        hints.append(format_suggestion(suggestion))
     if tier is not None:
         tier_hint = format_model_tier(tier)
         if me is not None and _mode_effort_enabled():

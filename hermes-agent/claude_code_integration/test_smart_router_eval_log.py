@@ -6,6 +6,9 @@ from the claude_code_integration directory.
 Privacy contract (load-bearing):
 - The prompt body never appears in the output JSONL row.
 - A logger exception never changes the hook's exit code or stdout output.
+
+Since 2026-09-23 the writer is OPT-IN (SMART_ROUTER_EVAL_LOG=1) and OFF by
+default, so the helper below arms it explicitly; one test covers the default.
 """
 
 from __future__ import annotations
@@ -22,15 +25,23 @@ from unittest import mock
 
 
 class _IsolatedLogPath:
-    """Patches CLAUDE_CONFIG_DIR + reloads the hook so EVAL_LOG_PATH resolves to a tmpdir."""
+    """Patches CLAUDE_CONFIG_DIR + reloads the hook so EVAL_LOG_PATH resolves to a tmpdir.
 
-    def __init__(self, tmpdir: Path):
+    Also sets SMART_ROUTER_EVAL_LOG, which gates the writer (default OFF in
+    production). Pass enable_log=False to exercise that default.
+    """
+
+    def __init__(self, tmpdir: Path, enable_log: bool = True):
         self.tmpdir = tmpdir
+        self.enable_log = enable_log
         self._old_env = None
+        self._old_eval = None
 
     def __enter__(self):
         self._old_env = os.environ.get("CLAUDE_CONFIG_DIR")
+        self._old_eval = os.environ.get("SMART_ROUTER_EVAL_LOG")
         os.environ["CLAUDE_CONFIG_DIR"] = str(self.tmpdir)
+        os.environ["SMART_ROUTER_EVAL_LOG"] = "1" if self.enable_log else "0"
         # Re-import the hook so module-level EVAL_LOG_PATH picks up the env var.
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         for mod_name in ("smart_router_prompt_hook",):
@@ -44,13 +55,19 @@ class _IsolatedLogPath:
             os.environ.pop("CLAUDE_CONFIG_DIR", None)
         else:
             os.environ["CLAUDE_CONFIG_DIR"] = self._old_env
+        if self._old_eval is None:
+            os.environ.pop("SMART_ROUTER_EVAL_LOG", None)
+        else:
+            os.environ["SMART_ROUTER_EVAL_LOG"] = self._old_eval
 
 
 class TestEvalLogPrivacy(unittest.TestCase):
-    def _run_hook_with_payload(self, payload: dict, tmpdir: Path) -> tuple[int, str]:
+    def _run_hook_with_payload(
+        self, payload: dict, tmpdir: Path, enable_log: bool = True
+    ) -> tuple[int, str]:
         """Invoke smart_router_prompt_hook.main() with a JSON stdin payload."""
         raw = json.dumps(payload)
-        with _IsolatedLogPath(tmpdir) as hook:
+        with _IsolatedLogPath(tmpdir, enable_log=enable_log) as hook:
             with mock.patch.object(sys, "stdin", io.StringIO(raw)):
                 stdout_buf = io.StringIO()
                 with mock.patch.object(sys, "stdout", stdout_buf):
@@ -116,30 +133,37 @@ class TestEvalLogPrivacy(unittest.TestCase):
             self.assertEqual(rc_crash, rc_ok)
             self.assertEqual(stdout_crash, stdout_ok)
 
-    def test_suggested_skill_captured_when_present(self):
+    def test_no_row_written_when_switch_is_off(self):
+        """Default (SMART_ROUTER_EVAL_LOG unset/0) writes nothing at all."""
         with tempfile.TemporaryDirectory() as td:
             tmpdir = Path(td)
-            # Use a prompt the smart router actually classifies as a bug → /hunt.
             payload = {
                 "prompt": "Traceback (most recent call last): ValueError in foo.py",
                 "session_id": "test-sid",
-                "cwd": "D:\\projects\\super_claude",
+                "cwd": "D:\\projects\\super_code",
             }
-            self._run_hook_with_payload(payload, tmpdir)
-            row = json.loads((tmpdir / ".smart_router_eval.jsonl").read_text(encoding="utf-8"))
-            self.assertEqual(row["suggested_skill_or_null"], "/hunt")
+            rc, stdout = self._run_hook_with_payload(payload, tmpdir, enable_log=False)
+            self.assertEqual(rc, 0)
+            self.assertFalse(
+                (tmpdir / ".smart_router_eval.jsonl").exists(),
+                "eval log must not be written while the opt-in switch is off",
+            )
+            # The tier hint itself is unaffected by the logging switch.
+            self.assertIn("hookSpecificOutput", stdout)
 
-    def test_no_suggestion_logged_as_null(self):
+    def test_dead_skill_field_is_gone_from_the_row(self):
+        """The skill-suggestion branch was deleted; its column must not come back."""
         with tempfile.TemporaryDirectory() as td:
             tmpdir = Path(td)
             payload = {
-                "prompt": "hi there how are you doing today",  # neutral, no rule matches
+                "prompt": "Traceback (most recent call last): ValueError in foo.py",
                 "session_id": "test-sid",
-                "cwd": "D:\\projects\\super_claude",
+                "cwd": "D:\\projects\\super_code",
             }
             self._run_hook_with_payload(payload, tmpdir)
             row = json.loads((tmpdir / ".smart_router_eval.jsonl").read_text(encoding="utf-8"))
-            self.assertIsNone(row["suggested_skill_or_null"])
+            self.assertNotIn("suggested_skill_or_null", row)
+            self.assertIn("suggested_model_or_null", row)
 
     def test_project_slug_matches_claude_code_pattern(self):
         with tempfile.TemporaryDirectory() as td:
