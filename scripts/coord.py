@@ -40,6 +40,10 @@ Subcommands (every mutating one takes --session; falls back to $CLAUDE_SESSION_I
   beat      --session S [--note T]                               refresh heartbeat (+note)
   claim     --session S PATH [PATH ...]                          claim files if free
   release   --session S [PATH ...]                               drop some/all claims
+  claim-task   --session S ID [--title T]                       atomically check out a task
+  release-task --session S [ID]                                 give a task back (none = all mine)
+  finish-task  --session S ID                                   mark a task done (not redone)
+  tasks                                                         list tasks (held/free/done)
   done      --session S                                          remove this window
   status                                                         render + print work.md
   context   --session S                                          compact machine block (for a hook)
@@ -56,7 +60,12 @@ claim is first-come-first-served and atomic (whole op under the lock): if a
 LIVE other window already holds a path, the claim is refused for that path and
 reported as a conflict (exit 3), so the caller picks different work.
 
-Exit codes: 0 ok; 2 bad usage; 3 claim conflict. Never throws on a corrupt
+claim-task is the same guarantee one level up: it leases a TASK id (state
+"tasks": {id: {holder, status claimed|done, title, t}}), so two windows never
+start the same work even before either touches a file. A task held by a dead
+window is free for takeover; a finished one is refused so it is not redone.
+
+Exit codes: 0 ok; 2 bad usage; 3 claim conflict (file or task). Never throws on a corrupt
 state file -- it is rebuilt. Kill switch: COORD_DISABLE=1 makes every command a
 no-op success; or delete ~/.claude/.coord/<key>/ to reset.
 """
@@ -89,6 +98,7 @@ HOOK_LOCK_TIMEOUT = float(os.environ.get("COORD_HOOK_LOCK_TIMEOUT", "2.0"))
 # get GC'd once their heartbeat passes this grace instead of instantly.
 PID_DEAD_GRACE = int(os.environ.get("COORD_PID_DEAD_GRACE", "300"))
 EVENTS_KEEP = 25      # recent activity lines retained in work.md
+TASKS_DONE_KEEP = 50  # finished tasks remembered (so a done task is not redone)
 
 
 def now_iso() -> str:
@@ -403,6 +413,23 @@ def _render_work_md(state: dict, stale: int) -> str:
         lines.append(f"- doing: {w.get('note') or '-'}")
         claims = w.get("claims") or []
         lines.append(f"- holds ({len(claims)}): {', '.join(claims) if claims else '-'}")
+        tasks = _tasks_held_by(state, sid)
+        lines.append(f"- tasks ({len(tasks)}): {', '.join(tasks) if tasks else '-'}")
+    lines.append("")
+    lines.append("## Tasks")
+    all_tasks = state.get("tasks", {})
+    if not all_tasks:
+        lines.append("")
+        lines.append("(none)")
+    for tid, t in sorted(all_tasks.items()):
+        if t.get("status") == "done":
+            state_txt = f"done by {t.get('done_by')} at {t.get('done_at')}"
+        elif t.get("holder") in live:
+            state_txt = f"held by {t.get('holder')} since {t.get('t')}"
+        else:
+            state_txt = f"FREE (holder {t.get('holder')} gone)"
+        title = f" -- {t['title']}" if t.get("title") else ""
+        lines.append(f"- {tid}{title}: {state_txt}")
     lines.append("")
     lines.append("## Pending requests / handoffs")
     reqs = [r for r in state.get("requests", []) if r.get("status") in ("open", "answered")]
@@ -613,6 +640,37 @@ def _answers_for(state: dict, sid: str) -> list[dict]:
             if r.get("frm") == sid and r.get("status") == "answered"]
 
 
+def _norm_task(tid: str) -> str:
+    """Task ids compare case/whitespace-insensitively: 'Fix Login' == 'fix-login'."""
+    return re.sub(r"\s+", "-", (tid or "").strip().lower())
+
+
+def _task_holder(state: dict, tid: str, stale: int, exclude: str) -> str | None:
+    """Live window (other than exclude) currently holding task tid, else None.
+    A task whose holder died / left is free: the next claimant takes it over."""
+    t = state.get("tasks", {}).get(tid)
+    if not t or t.get("status") != "claimed":
+        return None
+    h = t.get("holder")
+    if not h or h == exclude:
+        return None
+    w = state["windows"].get(h)
+    return h if (w and _is_live(w, stale)) else None
+
+
+def _tasks_held_by(state: dict, sid: str) -> list[str]:
+    return sorted(k for k, t in state.get("tasks", {}).items()
+                  if t.get("status") == "claimed" and t.get("holder") == sid)
+
+
+def _trim_done_tasks(state: dict) -> None:
+    tasks = state.get("tasks", {})
+    done = sorted((t.get("done_at") or "", k) for k, t in tasks.items()
+                  if t.get("status") == "done")
+    for _, k in done[: max(0, len(done) - TASKS_DONE_KEEP)]:
+        del tasks[k]
+
+
 def hook_tick(session: str | None, cwd: str | None = None,
               note: str | None = None, stale: int = DEFAULT_STALE) -> dict:
     """One-call entry point for the UserPromptSubmit hook: refresh THIS window's
@@ -664,7 +722,8 @@ def hook_tick(session: str | None, cwd: str | None = None,
             if s == sid or not _is_live(w, stale):
                 continue
             others.append({"session": s, "branch": w.get("branch"),
-                           "note": w.get("note"), "claims": w.get("claims", [])})
+                           "note": w.get("note"), "claims": w.get("claims", []),
+                           "tasks": _tasks_held_by(state, s)})
         blocked = sorted({c for o in others for c in o["claims"]})
         return {"self": sid, "branch": branch, "others": others,
                 "blocked_paths": blocked,
@@ -809,6 +868,134 @@ def cmd_claim(args) -> int:
         return 3 if conflicts else 0
 
     return _with_lock(d, op)
+
+
+def cmd_claim_task(args) -> int:
+    """Atomically check out a TASK (not a file): only one live window may hold
+    a given task id, so two windows never start the same work. First-come wins;
+    a task whose holder died is taken over; a finished task is refused (exit 3)
+    so it is not redone. Exit 0 granted, 3 held/done elsewhere."""
+    sid = _session(args, mutating=True)
+    if not sid:
+        sys.stderr.write("coord claim-task: no session\n")
+        return 2
+    sid = sid[:6]
+    tid = _norm_task(args.id)
+    if not tid:
+        sys.stderr.write("coord claim-task: empty task id\n")
+        return 2
+    key, _, branch = repo_identity()
+    d = COORD_ROOT / key
+
+    def op():
+        state = _load_state(d)
+        _gc(state, args.stale)
+        if sid not in state["windows"]:
+            _register_into(state, args, sid, branch)
+        state["windows"][sid]["hb"] = now_iso()
+        tasks = state.setdefault("tasks", {})
+        t = tasks.get(tid)
+        out = {"task": tid, "granted": False}
+        if t and t.get("status") == "done":
+            out.update(reason="done", by=t.get("done_by"), at=t.get("done_at"))
+            rc = 3
+        elif (holder := _task_holder(state, tid, args.stale, exclude=sid)):
+            out.update(reason="held", holder=holder)
+            rc = 3
+        else:
+            prev = (t or {}).get("holder")
+            if prev and prev != sid:
+                _add_event(state, f"[{sid}] took over task {tid} from {prev} (gone)")
+            elif prev != sid:
+                _add_event(state, f"[{sid}] claimed task {tid}")
+            tasks[tid] = {"id": tid, "title": args.title or (t or {}).get("title") or "",
+                          "holder": sid, "status": "claimed",
+                          "t": (t or {}).get("t") if prev == sid else now_iso()}
+            out["granted"] = True
+            rc = 0
+        _save_state(d, state)
+        _write_work_md(d, state, args.stale)
+        sys.stdout.write(json.dumps(out) + "\n")
+        return rc
+
+    return _with_lock(d, op)
+
+
+def cmd_release_task(args) -> int:
+    """Give a task back unfinished (it becomes free). No id = all my tasks."""
+    sid = _session(args, mutating=True)
+    if not sid:
+        sys.stderr.write("coord release-task: no session\n")
+        return 2
+    sid = sid[:6]
+    d = journal_dir()
+
+    def op():
+        state = _load_state(d)
+        tasks = state.get("tasks", {})
+        targets = [_norm_task(args.id)] if args.id else _tasks_held_by(state, sid)
+        released = [k for k in targets
+                    if tasks.get(k, {}).get("holder") == sid
+                    and tasks[k].get("status") == "claimed"]
+        for k in released:
+            del tasks[k]
+        if released:
+            _add_event(state, f"[{sid}] released task {', '.join(released)}")
+        _save_state(d, state)
+        _write_work_md(d, state, args.stale)
+        sys.stdout.write(json.dumps({"released": released}) + "\n")
+        return 0
+
+    return _with_lock(d, op)
+
+
+def cmd_finish_task(args) -> int:
+    """Mark a task done so no window picks it up again. Allowed for the holder,
+    or for anyone when the task is unheld / its holder is gone. Exit 3 if a
+    different live window holds it."""
+    sid = _session(args, mutating=True)
+    if not sid:
+        sys.stderr.write("coord finish-task: no session\n")
+        return 2
+    sid = sid[:6]
+    tid = _norm_task(args.id)
+    d = journal_dir()
+
+    def op():
+        state = _load_state(d)
+        holder = _task_holder(state, tid, args.stale, exclude=sid)
+        if holder:
+            sys.stdout.write(json.dumps({"task": tid, "done": False,
+                                         "reason": "held", "holder": holder}) + "\n")
+            return 3
+        tasks = state.setdefault("tasks", {})
+        t = tasks.get(tid) or {"id": tid, "title": "", "t": now_iso()}
+        t.update(status="done", holder=sid, done_by=sid, done_at=now_iso())
+        tasks[tid] = t
+        _trim_done_tasks(state)
+        _add_event(state, f"[{sid}] finished task {tid}")
+        _save_state(d, state)
+        _write_work_md(d, state, args.stale)
+        sys.stdout.write(json.dumps({"task": tid, "done": True}) + "\n")
+        return 0
+
+    return _with_lock(d, op)
+
+
+def cmd_tasks(args) -> int:
+    """List every known task with its state (held / free / done)."""
+    d = journal_dir()
+    state = _load_state(d)
+    out = []
+    for tid, t in sorted(state.get("tasks", {}).items()):
+        st = t.get("status")
+        if st == "claimed":
+            w = state["windows"].get(t.get("holder"))
+            st = "held" if (w and _is_live(w, args.stale)) else "free"
+        out.append({"task": tid, "title": t.get("title", ""), "state": st,
+                    "holder": t.get("holder")})
+    sys.stdout.write(json.dumps(out) + "\n")
+    return 0
 
 
 def cmd_release(args) -> int:
@@ -992,6 +1179,7 @@ def cmd_context(args) -> int:
         others.append({
             "session": s, "branch": w.get("branch"), "note": w.get("note"),
             "claims": w.get("claims", []),
+            "tasks": _tasks_held_by(state, s),
         })
     blocked = sorted({c for o in others for c in o["claims"]})
     _, _, branch = repo_identity()
@@ -1047,6 +1235,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("release"); add_session(sp)
     sp.add_argument("paths", nargs="*"); sp.set_defaults(func=cmd_release)
+
+    sp = sub.add_parser("claim-task"); add_session(sp)
+    sp.add_argument("id", help="short task id, e.g. fix-login")
+    sp.add_argument("--title", default=None, help="one-line description")
+    sp.set_defaults(func=cmd_claim_task)
+
+    sp = sub.add_parser("release-task"); add_session(sp)
+    sp.add_argument("id", nargs="?", default=None); sp.set_defaults(func=cmd_release_task)
+
+    sp = sub.add_parser("finish-task"); add_session(sp)
+    sp.add_argument("id"); sp.set_defaults(func=cmd_finish_task)
+
+    sp = sub.add_parser("tasks"); sp.set_defaults(func=cmd_tasks)
 
     sp = sub.add_parser("request"); add_session(sp)
     sp.add_argument("--to", required=True, help="target session6, branch name, or '*'")

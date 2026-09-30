@@ -344,6 +344,10 @@ requests addressed to this window. A solo window injects nothing.
 python ~/.claude/scripts/coord.py status                         # print work.md
 python ~/.claude/scripts/coord.py claim src/foo.py               # lease a file (exit 3 on conflict)
 python ~/.claude/scripts/coord.py release src/foo.py             # free it
+python ~/.claude/scripts/coord.py claim-task fix-login --title "..."  # atomic TASK checkout (exit 3 = held elsewhere / already done)
+python ~/.claude/scripts/coord.py finish-task fix-login          # mark done so no window redoes it
+python ~/.claude/scripts/coord.py release-task [fix-login]       # give back unfinished (none = all mine)
+python ~/.claude/scripts/coord.py tasks                          # list tasks: held / free / done
 python ~/.claude/scripts/coord.py request --to <sid|branch|*> --note "merge X into main"
 python ~/.claude/scripts/coord.py reply <id> --note "..."        # answer a request (-> back to asker)
 python ~/.claude/scripts/coord.py ack <id>                       # close out an answer you read

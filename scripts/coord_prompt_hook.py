@@ -62,12 +62,17 @@ def _build_context(tick: dict) -> str:
         for o in others:
             held = ", ".join(o.get("claims") or []) or "-"
             note = o.get("note") or "-"
-            lines.append(f"- [{o.get('session')}] {o.get('branch') or '?'}: \"{note}\" | holds: {held}")
+            tasks = ", ".join(o.get("tasks") or []) or "-"
+            lines.append(f"- [{o.get('session')}] {o.get('branch') or '?'}: \"{note}\" | holds: {held}"
+                         f" | tasks: {tasks}")
         if blocked:
             lines.append("Do NOT edit/commit/merge these files (another live window owns them): "
                          + ", ".join(blocked))
         lines.append("Before editing a file no one holds, claim it: "
                      "`python ~/.claude/scripts/coord.py claim <path>` (on conflict, pick other work).")
+        lines.append("Before STARTING a task, check it out: `coord.py claim-task <id> --title \"...\"` "
+                     "(exit 3 = another window has it or it is done -> pick other work); "
+                     "`coord.py finish-task <id>` when done.")
     if reqs:
         lines.append("Requests addressed to YOU -- answer with `coord.py reply <id> --note \"...\"` "
                      "(or decline). DECISION-GATE: if it needs an irreversible op (merge to main, "

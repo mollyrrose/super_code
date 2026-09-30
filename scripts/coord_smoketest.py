@@ -94,6 +94,31 @@ def main() -> int:
     r = call("bbbbbb", "claim", "src/foo.py", expect_rc=0)
     check("B claims after A releases", "src/foo.py" in json.loads(r.stdout)["granted"])
 
+    # atomic task checkout: A takes a task, B is refused, ids normalise
+    r = call("aaaaaa", "claim-task", "Fix Login", "--title", "login bug", expect_rc=0)
+    check("A task checkout granted", json.loads(r.stdout)["granted"] is True)
+    r = call("bbbbbb", "claim-task", "fix-login", expect_rc=3)
+    g = json.loads(r.stdout)
+    check("B task checkout refused (held by A)", g.get("reason") == "held" and g.get("holder") == "aaaaaa")
+    r = call("aaaaaa", "claim-task", "fix-login", expect_rc=0)
+    check("re-claim by holder is idempotent", json.loads(r.stdout)["granted"] is True)
+    ctx_b = json.loads(call("bbbbbb", "context").stdout)
+    check("B sees A's task in context",
+          any("fix-login" in o.get("tasks", []) for o in ctx_b["others"]))
+    r = call("bbbbbb", "finish-task", "fix-login", expect_rc=3)
+    check("B cannot finish A's live task", json.loads(r.stdout)["done"] is False)
+    call("aaaaaa", "release-task", "fix-login", expect_rc=0)
+    r = call("bbbbbb", "claim-task", "fix-login", expect_rc=0)
+    check("B takes task after A releases", json.loads(r.stdout)["granted"] is True)
+    r = call("bbbbbb", "finish-task", "fix-login", expect_rc=0)
+    check("holder finishes task", json.loads(r.stdout)["done"] is True)
+    r = call("aaaaaa", "claim-task", "fix-login", expect_rc=3)
+    check("finished task is not re-checked-out", json.loads(r.stdout).get("reason") == "done")
+    call("aaaaaa", "claim-task", "orphan-task", expect_rc=0)
+    tl = {t["task"]: t for t in json.loads(call("aaaaaa", "tasks").stdout)}
+    check("tasks lists held + done", tl["orphan-task"]["state"] == "held" and tl["fix-login"]["state"] == "done")
+    check("work.md renders Tasks section", "## Tasks" in call("aaaaaa", "status").stdout)
+
     # request/reply/ack round-trip: A asks B, B replies, A sees the answer
     r = call("aaaaaa", "request", "--to", "bbbbbb", "--note", "who rebases PR2?")
     rid = json.loads(r.stdout)["id"]
@@ -117,6 +142,8 @@ def main() -> int:
     r = call("cccccc", "register", "--note", "third window", expect_rc=0)
     r = call("cccccc", "claim", "src/foo.py", expect_rc=0)
     check("free path reclaimable after holders die", "src/foo.py" in json.loads(r.stdout)["granted"])
+    r = call("cccccc", "claim-task", "orphan-task", expect_rc=0)
+    check("dead holder's task is taken over", json.loads(r.stdout)["granted"] is True)
 
     # done removes a window
     call("cccccc", "done", expect_rc=0)
