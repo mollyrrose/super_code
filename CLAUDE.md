@@ -274,6 +274,40 @@ already exists per call, so no per-tool hook is needed.
 Kill switch: `LOAD_RETRY_DISABLE=1` (pass-through single run, no gate/retry), or
 just don't call it. No daemon, no hook -- nothing persists when it exits.
 
+## Process registry (proc_registry.py) -- windows record + kill what they started
+
+`scripts/proc_registry.py` (installed to `~/.claude/scripts/`, smoketest
+`proc_registry_smoketest.py`) keeps a per-window list of the processes a window
+launched, in `~/.claude/.proc_registry/<session6>.json` (one file per window, no
+lock contention). Each entry holds pid + process START time + label + command;
+the start time is the PID-reuse guard -- a pid now owned by a different process
+is never killed.
+
+```
+python ~/.claude/scripts/proc_registry.py run --label devserver --detach -- npm run dev   # start + register
+python ~/.claude/scripts/proc_registry.py add --pid 1234 --label watcher                  # register a running one
+python ~/.claude/scripts/proc_registry.py list [--all]                                    # mine (or every window's) + alive
+python ~/.claude/scripts/proc_registry.py kill --label devserver | --pid N | --mine       # tree-kill, unregister
+python ~/.claude/scripts/proc_registry.py gc                                              # drop dead entries
+python ~/.claude/scripts/proc_registry.py reap-hooks [--older 30] [--yes]                 # hung HOOK sweep (dry-run default)
+```
+
+Rule: a long-lived / detached process a window starts (dev server, watcher,
+detached job) goes through `run --detach` or gets an `add`, so it can be killed
+by label later; `kill --mine` before `/qClose` ends the window.
+
+HARD LIMIT: only processes launched through `run` or registered with `add` are
+known. Harness-spawned processes (hook subprocesses, MCP servers) never pass
+through it -- `reap-hooks` is the separate pattern sweep for those (ECC hook
+wrappers, `run-with-flags`, `mcp-health-check`, `ruflo@latest hooks`; override
+with `PROC_REAP_PATTERNS`). Context: on 2026-09-30, 358 hung hook processes (up
+to 5 days old) loaded the machine enough that `hook_dispatch.py
+UserPromptSubmit` hit its 20s timeout; the dispatcher's own hooks take ~12s
+cold and ~0.6s warm.
+
+Kill switch: `PROC_REGISTRY_DISABLE=1` (`run` still executes, unregistered; all
+else no-op), or delete `~/.claude/.proc_registry/`. Nothing runs automatically.
+
 ## Token compression layer (tokenjuice)
 
 `scripts/tokenjuice.py` (installed to `~/.claude/scripts/`, smoketest
