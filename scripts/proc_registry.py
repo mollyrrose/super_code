@@ -169,7 +169,11 @@ def cmd_run(args) -> int:
     sid = None if DISABLED else _need_sid(args)
     flags = 0
     if args.detach and os.name == "nt":
-        flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+        # CREATE_NO_WINDOW, not DETACHED_PROCESS: a console-less (detached)
+        # parent makes Windows open a NEW visible console for every console
+        # child it spawns (python.exe, node.exe) -- a hidden console is
+        # inherited by the children instead, so nothing pops up.
+        flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
     proc = subprocess.Popen(cmd, creationflags=flags,
                             stdin=subprocess.DEVNULL if args.detach else None,
                             stdout=subprocess.DEVNULL if args.detach else None,
