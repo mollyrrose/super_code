@@ -21,8 +21,8 @@ stop.
 
 **Project scope filter (mandatory):** Before processing any entry, check
 `entry["cwd"]`. Skip entries where `cwd` does NOT resolve under
-`D:\projects\super_claude` (the super_claude project root). Use:
-`Path(entry.get("cwd","")).resolve().is_relative_to(Path(r"D:\projects\super_claude").resolve())`
+`D:\Projects\super_code` (the project root; renamed from `super_claude`). Use:
+`Path(entry.get("cwd","")).resolve().is_relative_to(Path(r"D:\Projects\super_code").resolve())`
 A missing or empty `cwd` field always fails the check -- skip the entry.
 This prevents cross-project transcript content from landing in this project's memory.
 
