@@ -274,6 +274,28 @@ already exists per call, so no per-tool hook is needed.
 Kill switch: `LOAD_RETRY_DISABLE=1` (pass-through single run, no gate/retry), or
 just don't call it. No daemon, no hook -- nothing persists when it exits.
 
+## Worktree lifecycle (worktree_lifecycle.py) -- which worktree is merged / stale / conflicting
+
+`scripts/worktree_lifecycle.py` (installed to `~/.claude/scripts/`, smoketest
+`worktree_lifecycle_smoketest.py`) classifies every worktree of the repo as
+main / detached / dirty / merged / conflict / stale / merge-ready / idle and
+predicts merge conflicts against `--base` (default main) with `git merge-tree
+--write-tree`, without touching any working tree. Complements coord.py: coord
+knows who holds which FILE, this knows which BRANCH is safe to remove or would
+conflict. Ported stdlib-only from ECC's `worktree-lifecycle` (MIT, attribution
+in the docstring).
+
+```
+python ~/.claude/scripts/worktree_lifecycle.py            # table
+python ~/.claude/scripts/worktree_lifecycle.py --gc       # cleanup plan (dry-run)
+python ~/.claude/scripts/worktree_lifecycle.py --json --stale-days 7
+```
+
+`--gc` never deletes: it prints `git worktree remove` / `git branch -d` only for
+fully merged trees; stale unmerged trees are "salvage first", dirty or ahead
+trees are kept. Running the printed commands is a destructive op behind the
+decision-gate. Read-only, no hook, nothing persists -- delete the file to remove.
+
 ## Process registry (proc_registry.py) -- windows record + kill what they started
 
 `scripts/proc_registry.py` (installed to `~/.claude/scripts/`, smoketest

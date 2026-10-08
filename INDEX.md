@@ -37,7 +37,9 @@ rules in `CLAUDE.md`. Editing here changes how every Claude Code session behaves
   at `~/.claude/scripts/*` and `hermes-agent/claude_code_integration/*`.
 - `scripts/` — tracked copies of hook/runtime scripts, installed to
   `~/.claude/scripts/`. Notably `context_budget_gate.py` (+ smoketest),
-  `statusline_with_weekly.js`, and `claude-glm.ps1` (GLM/z.ai launcher).
+  `statusline_with_weekly.js`, `claude-glm.ps1` (GLM/z.ai launcher), and
+  `worktree_lifecycle.py` (+ smoketest; read-only worktree states + merge
+  conflict prediction, `--gc` dry-run cleanup plan).
 - `hermes-agent/claude_code_integration/` — curator, `smart_router_*`,
   `decision_log_cli.py`, `mark_drained_cli.py`.
 - `hermes-agent/claude_skills_backup/` — backup of installed skills, including the
