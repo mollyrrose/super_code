@@ -3,6 +3,41 @@
 Newest entry on top. One short ADR-style entry per non-trivial / hard-to-reverse
 decision. See `~/.claude/CLAUDE.md` "Decision log" for the format.
 
+### 2026-10-28 - pentest_break_policy.py gets 4 scope types (host/segment/ssid/hashfile), not a flat tool-exclusion list
+Decision: extended the single-host-only authorization gate with four disjoint
+scope types, each pinned to the tool category that actually matches its blast
+radius (host: Metasploit/Hydra/sqlmap/etc; segment/CIDR, capped at /16 v4 or
+/32 v6: responder/ntlmrelayx/bettercap; ssid: aircrack-ng family/kismet;
+hashfile (POSIX or Windows absolute path): hashcat/john), instead of either
+(a) leaving those tool categories permanently excluded (the prior decision),
+or (b) folding every attack-class tool into the single-host model.
+Why: the user explicitly asked for the full attack-class catalog ("minden,
+mint a pentest skill-ben ... C2/exploitation frameworkök is"), and pushing
+wireless/relay/offline-cracking tools through a single-host check would have
+been a FALSE control -- an attestation for one IP cannot meaningfully bound a
+WiFi deauth (whole radio range) or an ARP-poisoning relay (whole LAN segment).
+Ran the full qRev 3-pass fleet twice (7 agents total across both rounds) given
+the stakes; found and fixed 18 real bugs, including one LATENT bug in the
+already-reviewed baseline host-scope code (IPv4-only CIDR detection let an
+IPv6 sweep through) that only surfaced because a Pass-2 agent was testing
+adjacent new logic. Full report: `.claude/review-log/qrev-reports/
+20261028-215500_kVUcDd-scopetypes.md`.
+Rejected alternatives: (a) leave segment/ssid/hashfile tools permanently
+excluded (the original decision) -- rejected once the user explicitly asked
+for full coverage, and the exclusion was already noted as "incidental, not
+intentional" in Pass 2 of the baseline review. (b) a blanket per-tool
+file-path/CIDR allowlist with no scope-type distinction -- rejected: john and
+hashcat have genuinely different CLI grammars (every positional vs.
+fixed-position), so one rule would either over-deny hashcat's legitimate
+wordlist argument or under-deny john's extra crack targets; same reasoning
+applies to segment vs. ssid (interface-driven, no checkable argv target) vs.
+host (fully checkable).
+Revisit if: a future scope-type bug surfaces in production -- the deferred
+architecture note (extract `_host_scope_decision`/`_ssid_scope_decision` as
+pure functions, matching segment/hashfile) is the first thing to do, per the
+backend-architect agent's hypothesis that the inlined host branch is why bugs
+kept concentrating there.
+
 ### 2026-10-28 - PentAGI wrapped under a new, separately-gated `pentest-break` skill, not folded into `/pentest`
 Decision: When asked to integrate PentAGI (vxcontrol/pentagi, autonomous
 AI pentesting platform) into the existing security tooling, did NOT merge it
