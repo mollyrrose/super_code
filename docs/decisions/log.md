@@ -3,6 +3,52 @@
 Newest entry on top. One short ADR-style entry per non-trivial / hard-to-reverse
 decision. See `~/.claude/CLAUDE.md` "Decision log" for the format.
 
+### 2026-10-28 - PentAGI wrapped under a new, separately-gated `pentest-break` skill, not folded into `/pentest`
+Decision: When asked to integrate PentAGI (vxcontrol/pentagi, autonomous
+AI pentesting platform) into the existing security tooling, did NOT merge it
+into `/pentest` (discovery-only, "never break anything" invariant) or into
+`security-analyzer`/`security-auditor`. Instead built a new, separate,
+manually-invoked-only skill (`pentest-break`) that wraps PentAGI as its
+exploitation backend, gated by a new fail-closed authorization-attestation
+script (`pentest_break_policy.py`: single host, time-windowed, own vs
+external-authorized basis, independent `PENTEST_BREAK_DISABLE` kill switch,
+mandatory audit log of every ALLOW/DENY). Auto-remediation after a successful
+exploit is allowed only for `own`-basis targets (apply-and-verify, reusing
+`pentest_preflight.py:verify_fix_or_revert`); `external-authorized` targets get
+propose-only remediation, same split `/pentest` Mode B already uses.
+Why: PentAGI is already named in `appsec-toolchain.md` as an "autonomous
+OFFENSIVE engine, awareness only, never run" -- the same category as HexStrike,
+whose own doc (`hexstrike-ai.md`) explicitly prescribes this exact shape if the
+category is ever used at all: "a separate, manually-invoked,
+VM/container-sandboxed, authorization-gated skill, never autonomous, never
+referenced by a hook." The user's request ("skillspector-scan, then wrap
+PentAGI's breaking part into a skill that can launch live, log every step, and
+patch afterward") is a legitimate, standard pentest workflow (discovery +
+exploitation + remediation is the normal full engagement shape), but it
+carries real authorization risk if given standing/ambient access -- "break
+into some system" with no named target or authorization basis is exactly the
+case this setup's own tool-use policy requires a clear authorization context
+for. Reused existing house patterns (the `pentest_policy.py` fail-closed style,
+the Mode A/B own-vs-external split, `verify_fix_or_revert`,
+`pentest_report.py`'s redaction/audit-log pattern) rather than inventing new
+mechanics, and reused PentAGI's own Docker sandbox rather than building new
+exploit tooling (lowest-autonomy-that-works).
+Rejected alternatives: (a) Fold PentAGI directly into `/pentest` as an
+exploitation phase -- rejected: breaks that skill's documented, tested,
+long-standing non-destructive invariant for every future caller of `/pentest`,
+not just this one. (b) Build exploitation tooling with no authorization gate,
+as the literal request initially read -- rejected: no mechanism to prevent
+unauthorized use once the capability exists; the gate is the only thing
+separating this from providing intrusion uplift with no safeguard. (c) Extract
+only PentAGI's patterns/ideas into docs (no runnable exploitation at all, the
+initially-offered middle option) -- superseded once the user clarified they
+want it live-launchable with real exploitation and auto-patch, which patterns-
+only cannot satisfy.
+Revisit if: the attestation-gate design proves too friction-heavy for
+legitimate repeated use (e.g. CTF/lab workflows re-attesting every few hours),
+or if PentAGI's own architecture changes such that Claude Code can mediate its
+internal tool calls individually rather than only at flow-submission time.
+
 ### 2026-09-23 - Smart-router skill suggestion deleted; eval logging made opt-in
 Decision: Delete the smart router's skill-suggestion branch outright
 (`classify_prompt`, `format_suggestion`, all `_rule_*` functions, the
