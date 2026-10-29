@@ -136,7 +136,7 @@
   },
   "enabledPlugins": {
     "ecc@ecc": true,
-    "ruflo-core@ruflo": true
+    "ruflo-core@ruflo": false
   },
   "extraKnownMarketplaces": {
     "superpowers-dev": {
