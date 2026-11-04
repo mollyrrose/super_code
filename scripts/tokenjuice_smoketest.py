@@ -151,6 +151,24 @@ def test_kill_switch_passthrough():
     check("--raw returns 0 (pass-through)", rc == 0)
 
 
+def test_git_log_commits():
+    commit = ("commit %040x\nAuthor: A <a@b>\nDate:   Wed Nov 4 11:51:%02d 2026 +0000\n\n"
+              "    subject %d\n\n    body line 1\n    body line 2\n    body line 3\n"
+              "    body line 4\n\n    Co-Authored-By: X <x@y>\n\n"
+              " scripts/a.py | 3 +++\n scripts/b.py | 1 -\n"
+              " 2 files changed, 3 insertions(+), 1 deletion(-)\n")
+    raw = "\n".join(commit % (i + 1, i, i) for i in range(20))
+    out, _ = tj.compress(raw, tj.load_rules(include_user=False), "git log --stat -20")
+    check("git-log keeps all 20 subjects", all(("subject %d" % i) in out for i in range(20)))
+    check("git-log caps body at 3 extra lines", "body line 4" not in out and "[+1 body lines]" in out)
+    check("git-log drops trailers", "Co-Authored-By" not in out)
+    check("git-log keeps diffstat summary", out.count("2 files changed") == 20)
+    check("git-log drops Author lines", "Author:" not in out)
+    check("git-log shrinks output", len(out) < len(raw))
+    oneline = "\n".join("%07x subject %d" % (i, i) for i in range(30))
+    check("git-log --oneline unchanged", tj.s_git_log_commits(oneline, {}) == oneline)
+
+
 def main():
     test_strip_ansi()
     test_fold_whitespace()
@@ -159,6 +177,7 @@ def main():
     test_drop_and_keep_regex()
     test_truncate()
     test_summarize_sections()
+    test_git_log_commits()
     test_html_to_markdown()
     test_shorten_urls()
     test_overlay_and_match()

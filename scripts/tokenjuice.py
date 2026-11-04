@@ -136,7 +136,12 @@ BUILTIN_RULES = [
     {
         "name": "git-log",
         "match": "git log",
-        "strategies": [{"type": "truncate", "head": 60, "tail": 0, "min_lines": 80}],
+        "strategies": [
+            {"type": "git_log_commits", "body_lines": 3, "stat_lines": 8},
+            # safety net for huge histories / --oneline floods; per-commit
+            # summaries are 1-12 lines, so this only trips on very long logs
+            {"type": "truncate", "head": 300, "tail": 20, "min_lines": 400},
+        ],
     },
     {
         "name": "git-diff",
@@ -362,6 +367,73 @@ def _summarize_block(lines):
     return "top: " + ", ".join("%s x%d" % (k, c) for k, c in top)
 
 
+_COMMIT_RE = re.compile(r"^commit ([0-9a-f]{7,40})\b(.*)$")
+_STAT_RE = re.compile(r"^ \S.* \| +(\d+|Bin)")
+_STAT_SUMMARY_RE = re.compile(r"^ \d+ files? changed")
+_TRAILER_RE = re.compile(r"^(Co-Authored-By|Claude-Session|Signed-off-by|Reviewed-by|Change-Id):", re.I)
+
+
+def s_git_log_commits(text, params):
+    """Per-commit summary for full-format `git log` (optionally --stat).
+
+    Every commit survives as `<short hash> <date> <subject>` plus at most
+    `body_lines` body lines and `stat_lines` diffstat rows (the "N files
+    changed" summary is always kept). A head-truncate used to drop whole
+    commits (rtk benchmark 2026-11-04: `git log -20` lost 15 of 20).
+    Output without `commit <hash>` headers (--oneline, --format) is returned
+    unchanged."""
+    body_cap = max(0, int(params.get("body_lines", 3)))
+    stat_cap = max(0, int(params.get("stat_lines", 8)))
+    lines = text.split("\n")
+    if not any(_COMMIT_RE.match(ln) for ln in lines):
+        return text
+    out, commit = [], None
+
+    def flush():
+        if commit is None:
+            return
+        head = "%s %s%s" % (commit["hash"][:9], commit["date"], commit["refs"])
+        body = [b for b in commit["body"] if b and not _TRAILER_RE.match(b)]
+        out.append((head + " " + (body[0] if body else "")).rstrip())
+        extra = body[1:]
+        out.extend("    " + b for b in extra[:body_cap])
+        if len(extra) > body_cap:
+            out.append("    ... [+%d body lines]" % (len(extra) - body_cap))
+        out.extend(commit["stat"][:stat_cap])
+        if len(commit["stat"]) > stat_cap:
+            out.append(" ... [+%d files]" % (len(commit["stat"]) - stat_cap))
+        if commit["summary"]:
+            out.append(commit["summary"])
+
+    for ln in lines:
+        m = _COMMIT_RE.match(ln)
+        if m:
+            flush()
+            commit = {"hash": m.group(1), "refs": m.group(2).rstrip(), "date": "",
+                      "body": [], "stat": [], "summary": ""}
+            continue
+        if commit is None:
+            out.append(ln)
+            continue
+        if ln.startswith("Date:"):
+            parts = ln[5:].split()
+            # "Wed Nov 4 11:51:20 2026 +0000" -> "Nov 4 2026"
+            commit["date"] = " ".join(parts[1:3] + parts[4:5]) if len(parts) >= 5 else ln[5:].strip()
+        elif ln.startswith(("Author:", "Merge:", "Commit:", "AuthorDate:", "CommitDate:")):
+            continue
+        elif _STAT_SUMMARY_RE.match(ln):
+            commit["summary"] = ln
+        elif _STAT_RE.match(ln):
+            commit["stat"].append(ln)
+        elif ln.startswith("    "):
+            body = ln[4:].rstrip()
+            if body or commit["body"]:
+                commit["body"].append(body)
+    flush()
+    # drop trailing blank body lines that survived inside the caps
+    return "\n".join(l for l in out if l.strip() != "")
+
+
 def s_html_to_markdown(text, params):
     text = _SCRIPT_STYLE_RE.sub("", text)
     text = re.sub(r"(?i)<\s*br\s*/?>", "\n", text)
@@ -439,6 +511,7 @@ STRATEGIES = {
     "keep_regex": s_keep_regex,
     "truncate": s_truncate,
     "summarize_sections": s_summarize_sections,
+    "git_log_commits": s_git_log_commits,
     "html_to_markdown": s_html_to_markdown,
     "shorten_urls": s_shorten_urls,
     "condense": s_condense,

@@ -60,7 +60,8 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - revisit_if: the id appears on the official models page.
 
 ### Benchmark rtk against tokenjuice
-- status: proposed
+- status: done (2026-11-04: rtk v1.1.0-oss scanned clean, telemetry off by default. Clean-case savings rtk 18.7% vs tokenjuice ~0%, but tokenjuice's git-log rule was LOSSY (head-truncate dropped 15 of 20 commits). Fixed: new `git_log_commits` strategy, git log -20 now 64.5% saved with every commit kept. Kept tokenjuice (zero deps, opt-in); rtk would need a new PreToolUse(Bash) auto-rewrite hook + jq. Next port candidate: rtk's compact `ls` format.)
+- revisit_if: more lossy or 0%-saving tokenjuice rules turn up in daily use
 - class: C
 - source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
 - what: SkillSpector-scan `rtk-ai/rtk`, then run both on the same 10 noisy
@@ -69,9 +70,10 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - revisit_if: n/a.
 
 ### Evaluate context-mode against the tool-result hard limit
-- status: proposed
+- status: rejected (2026-11-04: Elastic License 2.0, not OSI-open (GitHub shows no license because its detector misses ELv2); its "sandbox" is a temp dir + timeout with full host fs/network access; needs Node 24.15+ and an always-on MCP server. It would solve the limit, but not worth that footprint now.)
 - class: C
 - source: [context-mode-mcp](/harness/context-mode-mcp.md)
+- revisit_if: a Read/Grep/MCP output volume problem shows up that tokenjuice + condense cannot handle.
 - what: tokenjuice cannot shrink Read/Grep/MCP results (hooks cannot rewrite
   them). Check whether context-mode's sandboxed-MCP approach actually keeps big
   outputs out of context in this harness, after a SkillSpector scan. No license
@@ -79,7 +81,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - revisit_if: n/a.
 
 ### Zero-shot forecasting baseline with TimesFM
-- status: proposed
+- status: approved (2026-11-04, user: written into the project TODO as a usefulness check)
 - class: C
 - source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
 - what: Run google-research/timesfm as a baseline against the existing
@@ -88,7 +90,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - revisit_if: n/a.
 
 ### Machine-translation QA with LanguageTool
-- status: proposed
+- status: approved (2026-11-04, user: written into the project TODO as a pilot; LT covers ~half the locales, an LLM/Hunspell path for the rest)
 - class: C
 - source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
 - what: Self-hosted LanguageTool server as an automated grammar/style pass
@@ -97,7 +99,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - revisit_if: n/a.
 
 ### Consolidate side-by-side TTS stacks
-- status: proposed
+- status: rejected (2026-11-04: voicebox has no Hungarian engine and wraps the same Chatterbox engine already in use; adds nothing)
 - class: C
 - source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
 - what: Four local TTS/voice-clone stacks are installed in parallel. A/B
@@ -107,7 +109,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - revisit_if: n/a.
 
 ### Pin the floating timescaledb `latest` image tag
-- status: proposed
+- status: approved (2026-11-04, user: written into the project TODO to verify and pin)
 - class: C
 - source: local inventory (2026-11-04)
 - what: A `timescale/timescaledb:latest` tag means a rebuild can silently jump
