@@ -40,6 +40,10 @@ the same file but stays disk-only and never pushes.
    "subagent nesting limit" and left half-understood checkpoint commits.
 7. **Honest log.** Every run prepends one `log.md` entry including what it
    skipped, what it adopted (branch names), and every edit it made to this file.
+8. **This repo is PUBLIC.** Never write private project names (other than
+   `super_code`), paths, component maps, or business details into any file
+   here. Per-project inventories live only in `~/.ai-radar/projects/` on the
+   user's machine; the cloud sees only the anonymous `watchlist.md`.
 
 ## Step 1 — sweep
 
@@ -52,6 +56,26 @@ the code back the claim; SkillSpector scan if available. Distill/merge into
 `tags`, `timestamp`, `resource`, `status`, `supersedes`, and `adoption:` one of
 `candidate | awareness | algorithmic-inspiration-only | rejected`). Merge, do
 not duplicate; supersede old entries explicitly.
+
+### Step 1b — followed sources
+
+For each row in **Sources** (below): fetch its feed (YouTube: the RSS URL via
+WebFetch, no yt-dlp needed; for full descriptions use
+`pip install yt-dlp` + `yt-dlp --skip-download --print description <url>` if
+the sandbox allows). For every video/post since the row's `last_seen`, pull the
+github.com links from the description, inspect each repo as in step 1, and
+file it under the closest topic with `source: <channel>` in the body. Update
+`last_seen`. A source that yields nothing adoptable 6 runs in a row: note it in
+Lessons and propose dropping it (do not drop it yourself).
+
+### Step 1c — watchlist upgrade check
+
+Read `watchlist.md` (OSS packages / tools / model ids the user's projects run).
+For each row: latest release on PyPI / npm / GitHub releases, deprecation or
+retirement notices, security advisories (GitHub advisory DB / OSV). A row with
+a newer major, a CVE, or a retirement date -> one `adoption-queue.md` item
+(class C if it needs the user's machine) naming the package, current -> new,
+and the breaking-change summary. No project names (guardrail 8).
 
 ## Step 2 — refresh (do it, don't just flag)
 
@@ -96,6 +120,8 @@ Edit only the TUNABLE sections below, and list each edit in the `log.md` entry:
 - **Seeds:** add a seed for any repo/term that surfaced in 2+ topics this run;
   drop a seed that produced nothing useful for 3 consecutive runs (keep a
   counter in its row).
+- **Sources:** update `last_seen` / `empty-runs`; add a channel or blog that
+  appeared as the origin of 2+ adoptable findings this run.
 - **Freshness:** adjust a topic window only with a stated reason (e.g. "8 of 10
   models entries went stale within 20 days").
 - **Lessons:** add one line per new failure mode or workaround (tool blocked,
@@ -122,6 +148,12 @@ punch-list. Terse.
 Consumers to weight findings for: (a) this repo's Claude Code setup (hooks,
 skills, coord.py, memgraph level-5 memory), (b) the community knowledge base.
 Weight by concrete adoptability, not hype.
+
+## TUNABLE — Sources
+
+| source | feed | last_seen | empty-runs |
+|--------|------|-----------|-----------|
+| YouTube @TheNextNewThingAI | https://www.youtube.com/feeds/videos.xml?channel_id=UCNZEktrsM5oJZ-MK4jKPMOQ | 2026-11-04 | 0 |
 
 ## TUNABLE — Freshness
 

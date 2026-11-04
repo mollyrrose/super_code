@@ -34,6 +34,16 @@ guardrails section in that file applies here too.
   NOT push. Class A/B items can also be checked against the local machine
   (installed versions, `~/.claude/settings.json`), which the cloud cannot see —
   prefer resolving class C queue items here.
+- **Project matching (local only).** Read `~/.ai-radar/projects/*.md` (private
+  per-project inventories: components, versions, upgrade paths, feature log).
+  For every new finding and every watchlist check, decide which project
+  components it touches and how to upgrade them. Write those per-project notes
+  ONLY into the matching `~/.ai-radar/projects/<project>.md` under a
+  `# Radar notes` heading (newest first), never into `okf/` (public repo,
+  ROUTINE.md guardrail 8). Also run the step 1c upgrade check for the packages
+  that are deliberately NOT in the public `watchlist.md` (listed in the private
+  inventories only). Material hits -> a class C item in `adoption-queue.md`
+  worded without project names, plus the detail in the private file.
 - **No commit / push** from this skill: disk only; committing is a separate
   gated step. Sync changed files to `~/.claude/okf/ai-radar/` at the end.
 - **Routine health:** run `python ~/.claude/scripts/radar_health.py --verbose`

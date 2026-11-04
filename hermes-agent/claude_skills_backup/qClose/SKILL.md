@@ -3,7 +3,7 @@ name: qClose
 description: "Close a working session — invoke hermes-learn for any reusable pattern, commit + push pending changes, then generate a per-session unique resume prompt at <project>/.scratch/qclose_resume_<sessid6>.md that a fresh Claude Code window can paste back to pick up exactly where we left off, in the EXACT worktree where the work happened. Invoked via /qClose (canonical) OR any case variant — /qclose, /Qclose, /QClose, /QCLOSE all map to this same skill (case-insensitive). If the user types any of these, treat as a /qClose invocation and proceed with this skill's runbook."
 ---
 
-# qClose — session-handoff in 7 steps
+# qClose — session-handoff in 7 steps (+ Step 5b radar feature log)
 
 `/qClose` is what you run before walking away from a working session. It commits anything that's still in flight, learns from the session, and leaves behind a **per-session-unique** markdown file the user (or another Claude Code window) can paste in to resume from exactly where this window stopped — without losing the WHY, the open threads, the in-flight plans, OR the working-tree context.
 
@@ -365,6 +365,57 @@ NOT move it back under `~/.claude/`; that reintroduces the unavoidable prompt.
 Never rewrite or truncate the index's existing lines — the rewrite in step 2 only
 ADDS a line. Append-only. Rotation, if ever needed, is a separate user-driven task.
 
+### Step 5b — AI Radar feature log (track what the projects use and how it evolves)
+
+The AI Radar (`D:/Projects/super_code/okf/ai-radar/`) matches new open-source
+tools and upgrades against what each project actually uses. qClose keeps that
+picture current. Two targets, deliberately split because `super_code` is a
+PUBLIC repo:
+
+- **Private, local-only:** `~/.ai-radar/projects/<project>.md` (outside
+  `~/.claude/`, so no edit prompt; never inside any repo). Per-project component
+  table + `# Feature log`. `<project>` = basename of the main repo root.
+- **Public, anonymous:** `D:/Projects/super_code/okf/ai-radar/watchlist.md` —
+  one row per third-party OSS package/tool/model id (name, version, date
+  adopted/changed). NO project names, paths or business terms; a package whose
+  name alone reveals what a private project does stays in the private file only. The cloud radar reads
+  this to know what to watch for upgrades.
+
+Procedure:
+
+1. From this session's commits (`git log --since=<session start>`) and the
+   "What this window was doing" synthesis, list only **material** changes:
+   a new feature/capability, an OSS tool or model adopted / upgraded / removed,
+   or a component swapped (e.g. email via SMTP -> provider API). Refactors,
+   fixes, copy edits and docs do not count. None -> skip silently, closeout says
+   `radar: no feature changes`.
+2. Private file: if missing, create it from this template; otherwise Read +
+   Write it. Prepend under `# Feature log` (newest first):
+   `- <YYYY-MM-DD> — <feature or change, one line> [<tool>@<version> if any]`.
+   If a component's tool/version changed, update its row in `# Components` too.
+   ```
+   ---
+   type: ProjectInventory
+   title: <project> — component inventory
+   project_root: <abs path>
+   timestamp: <today>
+   ---
+   # Purpose
+   # Components
+   | capability | how it is built (tool + version) | upgrade path / what to watch |
+   |---|---|---|
+   # Open-source tools adopted
+   # Feature log
+   ```
+3. Public watchlist: only if an OSS package/tool/model id was adopted, upgraded
+   or removed. Read + Write `watchlist.md`; add or update that row
+   (`| name | version | kind | changed |`), or set `removed <date>`. Do NOT
+   commit it from another project's qClose — leave it on disk and say
+   `radar: watchlist updated in super_code (uncommitted)` in the closeout; the
+   super_code side commits it (when THIS project is super_code, stage it with
+   the Step 6 commit).
+4. Never put secrets, emails, personal names, or business details in either file.
+
 ### Step 6 — Commit + push
 
 If `git status --porcelain` returns nothing: skip; print `commit: no pending changes`.
@@ -381,6 +432,7 @@ Otherwise:
   "What this window was doing" synthesis>.
   ```
 - **Do NOT push automatically.** After the commit lands, ask the user explicitly: `Push commit <short_hash> to <remote>/<branch>? (yes/no)`. Default to no-push if the user doesn't answer affirmatively. This is hard-coded — even projects with a standing "push" memory authorization for explicit `push` commands do NOT auto-push on `/qClose`.
+- **Active `/goal` deadlock guard.** If this session armed a session-scoped `/goal` Stop-condition that is still active (a `Goal set: ...` / "A session-scoped Stop hook is now active with condition ..." message earlier in the session, or Stop-hook errors quoting the goal text), the goal hook will block THIS closing turn-end — the push question ends the turn waiting on the user, which the goal evaluator treats as an unmet-goal stop, re-blocking up to the harness's 9-consecutive-blocks override on every turn until cleared. Only the user can clear it (`/goal` is a CLI built-in). So: add the `goal:` line to the Step 7 closeout telling them to type `/goal clear` BEFORE answering the push question, and if the goal hook still blocks this closing turn, reply one short line ("holding closed — type /goal clear") and stop again; never restart goal work while closing. (Full rule: global `~/.claude/CLAUDE.md` "/goal Stop-condition vs. waiting-for-user turns".)
 - If a pre-commit hook fails: **do not bypass with `--no-verify`** (global project rule). Surface the failure, leave the resume prompt written, exit cleanly. The user resolves the hook and re-runs `/qClose`.
 
 ### Step 7 — Print the closeout (NEW FORMAT — copy-paste-shaped)
@@ -389,8 +441,10 @@ Final block to the user, in this EXACT shape (use plain ASCII boxes, no decorati
 
 ```
 qClose done.
+- radar:  <"no feature changes" / "feature log updated (<project>)" / "+ watchlist updated in super_code (uncommitted)">
 - commit: <short hash>  (or "no pending changes")
 - push:   awaiting your confirmation: push <short_hash> to <remote>/<branch>?  (or "pushed", "user said no", "skipped — <reason>")
+- goal:   ACTIVE — type /goal clear FIRST, then answer the push question  (this line ONLY when a session-scoped /goal Stop-condition is still armed; omit otherwise)
 - learn:  wrote hermes-auto-<slug>  (or "no skill captured")
 - index:  appended ~/.qclose/index.jsonl (session <sessid6>)
 
@@ -431,6 +485,8 @@ Format rules — get them exactly right, the user inspects this block:
 | Push always requires explicit user yes | The default is ASK, never auto-push. Applies to every repo without exception. |
 | `project_root == ~/.claude` | Write to `~/.claude/.qclose_resume_<sessid6>.md` (not `~/.claude/.scratch/`) per CLAUDE.md "Not for this directory" |
 | `~/.qclose/index.jsonl` doesn't exist | Create it (empty) with the Write tool (it makes the `~/.qclose/` dir), then append (Read + Write). Don't ask, don't warn — it's expected on first-ever /qClose. |
+| Session made no feature / OSS-tool changes | Step 5b skips; closeout `radar: no feature changes` |
+| `D:/Projects/super_code` absent | Step 5b writes only the private file; closeout `radar: watchlist skipped (super_code not found)` |
 | Index says another window closed same branch <30 min ago | Step 0 surfaces, default-stops on no-response |
 | User has no TODO files at all | Omit the "Open TODO entries" section entirely |
 | No plan files in `~/.claude/plans/` touched in 24h | Omit the "Open plan files" section |
