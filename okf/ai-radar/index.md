@@ -8,7 +8,9 @@ timestamp: 2026-11-04T00:00:00Z
 # AI Radar
 
 Compounding knowledge of what is new / better in the AI world. See `README.md`
-for the format and `log.md` for the ingest timeline.
+for the format and `log.md` for the ingest timeline. The weekly routine follows
+[ROUTINE.md](/ROUTINE.md) (self-updating runbook); findings that should change
+the repo go through [adoption-queue.md](/adoption-queue.md).
 
 ## Topics
 

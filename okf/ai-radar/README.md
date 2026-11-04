@@ -23,6 +23,8 @@ Source of truth: this repo (`okf/ai-radar/`). Live copy synced to
 ai-radar/
   index.md            # catalog (OKF reserved)
   log.md              # append-only ingest timeline (OKF reserved)
+  ROUTINE.md          # routine runbook: sweep, refresh, adopt, self-tune
+  adoption-queue.md   # findings -> repo changes, with approve/reject status
   harness/            # Claude Code / hook / skill / MCP capabilities
   models/             # Claude / OpenAI / GLM releases, price, limits, capability
   knowledge/          # RAG, OKF, knowledge-graph, agent-memory patterns
