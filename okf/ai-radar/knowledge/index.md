@@ -3,7 +3,7 @@ type: Index
 title: knowledge — RAG / OKF / knowledge-graph / agent-memory
 description: Patterns for structuring knowledge that AI agents consume and maintain.
 tags: [rag, okf, knowledge-graph, memory]
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 ---
 
 # knowledge
@@ -24,6 +24,7 @@ RAG, OKF, knowledge-graph, and agent-memory patterns.
 - [mem0-agent-memory-benchmark-2026](/knowledge/mem0-agent-memory-benchmark-2026.md) — claimed benchmark, unverified
 - [maximem-synap](/knowledge/maximem-synap.md) — new vendor agent-memory SDK, self-reported benchmarks vs. mem0; unverified
 - [openviking](/knowledge/openviking.md) — self-evolving context DB (Volcengine); vendor-reported benchmarks
+- [graphify](/knowledge/graphify.md) — codebase-to-knowledge-graph tool for Claude Code et al.; same project as this repo's own `graphifyy` dependency, claimed ~142k star count unverified
 
 See also the [cognition](/cognition/index.md) topic for brain-inspired
 memory/thinking architectures split out from this topic on 2026-08-27.
