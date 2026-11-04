@@ -9,6 +9,7 @@ timestamp: 2026-06-28T00:00:00Z
 
 Newest first. Each line: date — what changed.
 
+- 2026-11-04 (interactive, 2) — Added followed sources (ROUTINE.md step 1b; first: YouTube @TheNextNewThingAI via RSS), an anonymous dependency `watchlist.md` (step 1c upgrade/CVE/retirement checks), guardrail 8 (public repo, no project names), and qClose step 5b (feature log -> private `~/.ai-radar/projects/`, anonymised -> watchlist). Channel backfill: 111 videos (2026-06-04..11-02), 204 repos -> agent-tooling/source-thenextnewthingai-2026-11 (11 candidates, all unverified until SkillSpector-scanned); 6 class C items added to adoption-queue.
 - 2026-11-04 (interactive) — Routine upgraded from check-only to sweep -> refresh -> adopt -> self-tune. Added `ROUTINE.md` (self-updating runbook, LOCKED guardrails + TUNABLE seeds/freshness/lessons) and `adoption-queue.md` (7 items: 2 done, 3 proposed, 2 rejected). Trigger prompt now just points at ROUTINE.md; trigger repo URL fixed to super_code. Root cause of the 57-day gap: 8 scheduled runs (2026-09-15..11-03) died with 403 authentication_failed.
 - 2026-11-04 — Weekly sweep (cloud sandbox), all 6 topics + GitHub trending
   (6 views: daily/weekly x overall/Python/TypeScript, all reachable). **Gap

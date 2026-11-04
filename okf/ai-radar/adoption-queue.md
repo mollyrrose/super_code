@@ -59,6 +59,61 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
   silently. Confirm the id, then update the trigger's `model`.
 - revisit_if: the id appears on the official models page.
 
+### Benchmark rtk against tokenjuice
+- status: proposed
+- class: C
+- source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
+- what: SkillSpector-scan `rtk-ai/rtk`, then run both on the same 10 noisy
+  commands (git status/log, test runs, builds) and compare chars saved and
+  signal kept. Adopt rtk's rules into tokenjuice or switch, whichever wins.
+- revisit_if: n/a.
+
+### Evaluate context-mode against the tool-result hard limit
+- status: proposed
+- class: C
+- source: [context-mode-mcp](/harness/context-mode-mcp.md)
+- what: tokenjuice cannot shrink Read/Grep/MCP results (hooks cannot rewrite
+  them). Check whether context-mode's sandboxed-MCP approach actually keeps big
+  outputs out of context in this harness, after a SkillSpector scan. No license
+  file on GitHub: confirm terms first.
+- revisit_if: n/a.
+
+### Zero-shot forecasting baseline with TimesFM
+- status: proposed
+- class: C
+- source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
+- what: Run google-research/timesfm as a baseline against the existing
+  forecasting models on a held-out window; keep only if it beats them
+  out-of-sample. Local-only details in the private inventory.
+- revisit_if: n/a.
+
+### Machine-translation QA with LanguageTool
+- status: proposed
+- class: C
+- source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
+- what: Self-hosted LanguageTool server as an automated grammar/style pass
+  over translated content before publish; check coverage for every target
+  language first (it is uneven across languages).
+- revisit_if: n/a.
+
+### Consolidate side-by-side TTS stacks
+- status: proposed
+- class: C
+- source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
+- what: Four local TTS/voice-clone stacks are installed in parallel. A/B
+  jamiepine/voicebox (MIT) against the current best on the same scripts and
+  keep one. VoiceStudio is AGPL with an implausible star curve: skip unless
+  voicebox fails.
+- revisit_if: n/a.
+
+### Pin the floating timescaledb `latest` image tag
+- status: proposed
+- class: C
+- source: local inventory (2026-11-04)
+- what: A `timescale/timescaledb:latest` tag means a rebuild can silently jump
+  a Postgres major. Pin to the running version.
+- revisit_if: n/a.
+
 ## Rejected
 
 ### Hook `onFailure: "block"`

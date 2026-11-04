@@ -153,7 +153,7 @@ Weight by concrete adoptability, not hype.
 
 | source | feed | last_seen | empty-runs |
 |--------|------|-----------|-----------|
-| YouTube @TheNextNewThingAI | https://www.youtube.com/feeds/videos.xml?channel_id=UCNZEktrsM5oJZ-MK4jKPMOQ | 2026-11-04 | 0 |
+| YouTube @TheNextNewThingAI | https://www.youtube.com/feeds/videos.xml?channel_id=UCNZEktrsM5oJZ-MK4jKPMOQ | 2026-11-02 (digest: agent-tooling/source-thenextnewthingai-2026-11) | 0 |
 
 ## TUNABLE — Freshness
 
