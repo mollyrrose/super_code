@@ -169,6 +169,55 @@ def test_git_log_commits():
     check("git-log --oneline unchanged", tj.s_git_log_commits(oneline, {}) == oneline)
 
 
+def test_git_status_short():
+    raw = ("On branch main\nYour branch is ahead of 'origin/main' by 2 commits.\n"
+           "  (use \"git push\" to publish your local commits)\n\n"
+           "Changes to be committed:\n  (use \"git restore --staged <file>...\" to unstage)\n"
+           "\tmodified:   a.py\n\tnew file:   b.py\n\n"
+           "Changes not staged for commit:\n\tdeleted:    c.py\n\n"
+           "Untracked files:\n\td.txt\n\n"
+           "no changes added to commit (use \"git add\" and/or \"git commit -a\")\n")
+    out, _ = tj.compress(raw, tj.load_rules(include_user=False), "git status")
+    check("status branch line", out.splitlines()[0] == "* main...origin/main [ahead 2]")
+    check("status staged/worktree/untracked codes",
+          all(x in out.splitlines() for x in ("M  a.py", "A  b.py", " D c.py", "?? d.txt")))
+    check("status short-form unchanged", tj.s_git_status_short("## main\n M x", {}) == "## main\n M x")
+
+
+def test_ls_compact():
+    raw = ("total 12\ndrwxr-xr-x 1 u 197121    0 Nov  4 21:36 .\n"
+           "drwxr-xr-x 1 u 197121    0 Nov  4 21:36 ..\n"
+           "drwxr-xr-x 1 u 197121    0 Aug  3 20:26 lib\n"
+           "-rw-r--r-- 1 u 197121 5420 Jun 20  2025 a.py\n"
+           "lrwxrwxrwx 1 u 197121   12 Jun 20 17:12 ln -> a.py\n")
+    out = tj.s_ls_compact(raw, {})
+    lines = out.splitlines()
+    check("ls keeps every entry", len(lines) == 3 and "755 lib/" in lines)
+    check("ls file size human", "644 a.py  5.3K" in lines)
+    check("ls symlink kept", "l777 ln -> a.py" in lines)
+
+
+def test_never_grow():
+    raw = "x\n" * 3
+    rules = [{"name": "grow", "match": "*", "match_kind": "glob",
+              "strategies": [{"type": "html_to_markdown"}]}]
+    tj.STRATEGIES["_grow_test"] = lambda t, p: t + "PADDING" * 10
+    rules[0]["strategies"] = [{"type": "_grow_test"}]
+    out, trace = tj.compress(raw, rules, "anything")
+    del tj.STRATEGIES["_grow_test"]
+    check("never grows output", out == raw and trace[-1]["strategy"] == "never_grow")
+
+
+def test_git_diff_compact():
+    raw = ("diff --git a/x.py b/x.py\nindex 1a2b..3c4d 100644\n--- a/x.py\n+++ b/x.py\n"
+           "@@ -1,2 +1,2 @@\n-old\n--- a/not-a-header-inside-hunk\n+new\n"
+           " x.py | 12 ++++++------\n")
+    out = tj.s_git_diff_compact(raw, {})
+    check("diff header collapsed", out.startswith("=== x.py\n@@") and "index 1a2b" not in out)
+    check("diff hunk lines kept", "-old" in out and "--- a/not-a-header-inside-hunk" in out and "+new" in out)
+    check("diffstat bar dropped", " x.py | 12" in out.splitlines() and "++++" not in out)
+
+
 def main():
     test_strip_ansi()
     test_fold_whitespace()
@@ -178,6 +227,10 @@ def main():
     test_truncate()
     test_summarize_sections()
     test_git_log_commits()
+    test_git_status_short()
+    test_ls_compact()
+    test_git_diff_compact()
+    test_never_grow()
     test_html_to_markdown()
     test_shorten_urls()
     test_overlay_and_match()

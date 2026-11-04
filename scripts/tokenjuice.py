@@ -74,6 +74,14 @@ STRATEGIES (all deterministic)
   summarize_sections {head,tail,min_lines}
                                      like truncate, plus a one-line stat about the
                                      dropped block (count + most-frequent prefixes)
+  git_log_commits {body_lines,stat_lines}
+                                     full `git log` -> one summary per commit
+                                     (hash, date, subject, capped body/diffstat)
+  git_status_short                   long `git status` -> porcelain-like lines
+  git_diff_compact                   lossless diff header strip (`=== path`) +
+                                     diffstat bars dropped, counts kept
+  ls_compact                         `ls -l` -> `<octal perm> name size`, drops owner/
+                                     group/mtime/link count
   html_to_markdown                   lightweight tag strip -> markdown-ish text
   shorten_urls {max_len}             collapse long URLs to scheme://host/...(len)
   condense {content_type,ratio}      structure-aware blob condense via the
@@ -130,6 +138,7 @@ BUILTIN_RULES = [
         "strategies": [
             # the "(use ...)" hint lines carry no signal for a model
             {"type": "drop_regex", "patterns": [r"^\s*\(use "]},
+            {"type": "git_status_short"},
             {"type": "truncate", "head": 80, "tail": 20, "min_lines": 150},
         ],
     },
@@ -146,7 +155,12 @@ BUILTIN_RULES = [
     {
         "name": "git-diff",
         "match": "git diff",
-        "strategies": [{"type": "truncate", "head": 200, "tail": 40, "min_lines": 300}],
+        "strategies": [
+            {"type": "git_diff_compact"},
+            # safety net only: big diffs used to be cut at 240 lines, which
+            # silently dropped hunks; keep far more before folding
+            {"type": "truncate", "head": 1500, "tail": 100, "min_lines": 2000},
+        ],
     },
     {
         "name": "npm",
@@ -185,7 +199,10 @@ BUILTIN_RULES = [
         "name": "ls",
         "match": r"^\s*(ls|dir|Get-ChildItem)\b",
         "match_kind": "regex",
-        "strategies": [{"type": "truncate", "head": 80, "tail": 20, "min_lines": 150}],
+        "strategies": [
+            {"type": "ls_compact"},
+            {"type": "truncate", "head": 80, "tail": 20, "min_lines": 150},
+        ],
     },
     {
         "name": "grep",
@@ -434,6 +451,153 @@ def s_git_log_commits(text, params):
     return "\n".join(l for l in out if l.strip() != "")
 
 
+_STATUS_SECTIONS = (
+    ("Changes to be committed:", "S"),
+    ("Changes not staged for commit:", "W"),
+    ("Unmerged paths:", "U"),
+    ("Untracked files:", "??"),
+)
+_STATUS_KINDS = {"modified": "M", "new file": "A", "deleted": "D", "renamed": "R",
+                 "copied": "C", "typechange": "T", "both modified": "UU",
+                 "both added": "AA", "both deleted": "DD", "added by us": "AU",
+                 "added by them": "UA", "deleted by us": "DU", "deleted by them": "UD"}
+
+
+def s_git_status_short(text, params):
+    """Long-form `git status` -> porcelain-like lines (idea from rtk's
+    `rtk git status`). Branch line becomes `* branch...upstream [ahead N]`;
+    each path keeps its state (`M `/` M` staged vs worktree, `??`, `UU`).
+    Anything unrecognised (rebase/merge banners, errors) is kept verbatim, so
+    no signal is dropped. Output that is already short-form is unchanged."""
+    lines = text.split("\n")
+    if not any(ln.startswith("On branch ") or ln.startswith("HEAD detached") for ln in lines):
+        return text
+    out, section, branch = [], None, ""
+    for ln in lines:
+        s = ln.strip()
+        if ln.startswith("On branch "):
+            branch = "* " + ln[len("On branch "):].strip()
+            continue
+        if ln.startswith("HEAD detached"):
+            branch = "* (" + s + ")"
+            continue
+        m = re.match(r"Your branch is up to date with '([^']+)'", s)
+        if m:
+            branch += "..." + m.group(1)
+            continue
+        m = re.match(r"Your branch is (ahead of|behind) '([^']+)' by (\d+) commit", s)
+        if m:
+            branch += "...%s [%s %s]" % (m.group(2), m.group(1).split()[0], m.group(3))
+            continue
+        m = re.match(r"Your branch and '([^']+)' have diverged", s)
+        if m:
+            branch += "...%s [diverged]" % m.group(1)
+            continue
+        hit = [code for title, code in _STATUS_SECTIONS if s == title]
+        if hit:
+            section = hit[0]
+            continue
+        if not s or s.startswith("(use ") or s.startswith("(commit or discard") \
+                or s.startswith("and have ") or s.startswith("no changes added") \
+                or s.startswith("nothing added to commit") or s == "nothing to commit, working tree clean":
+            if s == "nothing to commit, working tree clean":
+                out.append("clean")
+            continue
+        if section and ln[:1] in ("\t", " "):
+            if section == "??":
+                out.append("?? " + s)
+                continue
+            m = re.match(r"([a-z ]+):\s+(.*)$", s)
+            if m and m.group(1) in _STATUS_KINDS:
+                code = _STATUS_KINDS[m.group(1)]
+                if section == "S":
+                    code = (code + " ")[:2]
+                elif section == "W":
+                    code = (" " + code)[-2:]
+                out.append("%s %s" % (code, m.group(2)))
+                continue
+        out.append(ln)
+    return "\n".join(([branch] if branch else []) + out)
+
+
+_LS_LONG_RE = re.compile(
+    r"^([-dlcbps])([-rwxsStT]{9})[.+@]?\s+\d+\s+\S+\s+\S+\s+(\d+)\s+"
+    r"\w{3}\s+\d{1,2}\s+(?:\d{1,2}:\d{2}|\d{4})\s+(.*)$")
+
+
+def _human(n):
+    for unit in ("", "K", "M", "G"):
+        if n < 1024 or unit == "G":
+            return ("%d%s" % (n, unit)) if unit == "" else ("%.1f%s" % (n, unit))
+        n /= 1024.0
+
+
+def _octal(perm):
+    """'rwxr-x--x' -> '751'. s/t (exec + special) count as x; S/T do not."""
+    digits = []
+    for j in (0, 3, 6):
+        r, w, x = perm[j], perm[j + 1], perm[j + 2]
+        digits.append(str((r == "r") * 4 + (w == "w") * 2 + (x in "xst") * 1))
+    return "".join(digits)
+
+
+def s_ls_compact(text, params):
+    """`ls -l` -> `<type><perm> name [size]` (idea from rtk's `rtk ls`).
+    Drops link count, owner, group and mtime; keeps every entry, its
+    permissions and size. Drops `total N`, `.` and `..`. Lines that are not
+    long-listing rows pass through unchanged."""
+    out = []
+    for ln in text.split("\n"):
+        if re.match(r"^total \d+$", ln.strip()):
+            continue
+        m = _LS_LONG_RE.match(ln)
+        if not m:
+            out.append(ln)
+            continue
+        kind, perm, size, name = m.group(1), m.group(2), int(m.group(3)), m.group(4)
+        if name in (".", ".."):
+            continue
+        octal = _octal(perm)
+        if kind == "d":
+            out.append("%s %s/" % (octal, name))
+        elif kind == "-":
+            out.append("%s %s  %s" % (octal, name, _human(size)))
+        else:
+            out.append("%s%s %s" % (kind, octal, name))
+    return "\n".join(out)
+
+
+_DIFF_HEADER_RE = re.compile(r"^diff --git a/(.+?) b/(.+)$")
+_DIFF_STAT_BAR_RE = re.compile(r"^( \S.*\|\s+\d+) [+-]+$")
+
+
+def s_git_diff_compact(text, params):
+    """Lossless `git diff` boilerplate strip (idea from rtk's `rtk git diff`):
+    the 4-line `diff --git / index / --- / +++` header per file becomes one
+    `=== path` line (rename/new/deleted mode lines are kept), and diffstat
+    `| 12 +++---` bars lose the +/- graph but keep the count. Every hunk line
+    is kept."""
+    out, in_header = [], False
+    for ln in text.split("\n"):
+        m = _DIFF_HEADER_RE.match(ln)
+        if m:
+            a, b = m.group(1), m.group(2)
+            out.append("=== " + (b if a == b else "%s -> %s" % (a, b)))
+            in_header = True
+            continue
+        if in_header:
+            if ln.startswith("@@") or not ln:
+                in_header = False
+            elif ln.startswith(("index ", "--- ", "+++ ")):
+                continue  # only inside a file header, never a hunk line
+        m = _DIFF_STAT_BAR_RE.match(ln)
+        if m:
+            out.append(m.group(1))
+            continue
+        out.append(ln)
+    return "\n".join(out)
+
+
 def s_html_to_markdown(text, params):
     text = _SCRIPT_STYLE_RE.sub("", text)
     text = re.sub(r"(?i)<\s*br\s*/?>", "\n", text)
@@ -512,6 +676,9 @@ STRATEGIES = {
     "truncate": s_truncate,
     "summarize_sections": s_summarize_sections,
     "git_log_commits": s_git_log_commits,
+    "git_status_short": s_git_status_short,
+    "ls_compact": s_ls_compact,
+    "git_diff_compact": s_git_diff_compact,
     "html_to_markdown": s_html_to_markdown,
     "shorten_urls": s_shorten_urls,
     "condense": s_condense,
@@ -605,6 +772,7 @@ def matching_rules(rules, subject):
 
 def compress(text, rules, subject):
     """Apply every matching rule's strategies in order. Returns (text, trace)."""
+    original = text
     trace = []
     for rule in matching_rules(rules, subject):
         for strat in rule.get("strategies", []):
@@ -619,6 +787,11 @@ def compress(text, rules, subject):
                 continue
             trace.append({"rule": rule.get("name"), "strategy": strat.get("type"),
                           "chars_before": before, "chars_after": len(text)})
+    # never make output bigger than the input (whitespace folding can add a
+    # few chars on already-tight output; rtk benchmark 2026-11-04 saw -1.5%)
+    if len(text) > len(original):
+        return original, trace + [{"rule": "_guard", "strategy": "never_grow",
+                                   "chars_before": len(text), "chars_after": len(original)}]
     return text, trace
 
 

@@ -60,7 +60,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - revisit_if: the id appears on the official models page.
 
 ### Benchmark rtk against tokenjuice
-- status: done (2026-11-04: rtk v1.1.0-oss scanned clean, telemetry off by default. Clean-case savings rtk 18.7% vs tokenjuice ~0%, but tokenjuice's git-log rule was LOSSY (head-truncate dropped 15 of 20 commits). Fixed: new `git_log_commits` strategy, git log -20 now 64.5% saved with every commit kept. Kept tokenjuice (zero deps, opt-in); rtk would need a new PreToolUse(Bash) auto-rewrite hook + jq. Next port candidate: rtk's compact `ls` format.)
+- status: done (2026-11-04: rtk v1.1.0-oss scanned clean, telemetry off by default. Clean-case savings rtk 18.7% vs tokenjuice ~0%, but tokenjuice's git-log rule was LOSSY (head-truncate dropped 15 of 20 commits). Fixed: new `git_log_commits` strategy, git log -20 now 64.5% saved with every commit kept. Kept tokenjuice (zero deps, opt-in); rtk would need a new PreToolUse(Bash) auto-rewrite hook + jq. Follow-up same day: ported rtk's git status / ls / diff-header formats into tokenjuice + a never-grow guard. Final head-to-head (tokenjuice vs rtk): git status 77/78%, git log -20 64/62%, git log --stat 40/0%, diff --stat 5/22%, full diff 2/27% but rtk drops ~36% of added lines (351 of 549 kept) so its lead is lossy, ls 54/64%, big grep 84/78%. Verdict: rtk is not better overall; stay on tokenjuice.)
 - revisit_if: more lossy or 0%-saving tokenjuice rules turn up in daily use
 - class: C
 - source: [source digest](/agent-tooling/source-thenextnewthingai-2026-11.md)
