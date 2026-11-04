@@ -14,7 +14,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 ## Open
 
 ### graphifyy installed version is unaudited
-- status: proposed
+- status: done (2026-11-04: user chose "newest"; 0.9.102 audited by hand + skillspector, installed, memory-graph query verified)
 - class: C
 - source: [knowledge/graphify](/knowledge/graphify.md)
 - what: Local `graphifyy` is **0.9.31**, but the last manual audit
@@ -22,7 +22,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
   is at 0.9.102 with ~100 point releases in 3 months. Either re-audit 0.9.31 or
   pin back to 0.8.37 (`pip install graphifyy==0.8.37`).
 - risk: supply-chain drift on a package that reads every memory file.
-- revisit_if: n/a — needs a decision.
+- revisit_if: next graphifyy upgrade past 0.9.102 needs its own audit row in `~/.claude/.skillspector_log.jsonl`.
 
 ### Stale model ids in the global tiering doc
 - status: done (2026-11-04, applied locally in the interactive session)

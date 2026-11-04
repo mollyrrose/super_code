@@ -100,6 +100,10 @@ markdown/ontology-first.
 
 # Notes
 
+- 2026-11-04 (local): `graphifyy` upgraded 0.9.31 -> **0.9.102** after a
+  hand audit + SkillSpector triage (no exfil/RCE; HIGH hits were defensive
+  code). The audit gap above is closed for 0.9.102.
+
 - Re-verify the star count and release cadence at the next scan using an
   authenticated GitHub API pull if available (`pushed_at`, `releases`,
   `stargazers_count` history) rather than a scraped page render.
