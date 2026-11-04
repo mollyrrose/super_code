@@ -9,6 +9,107 @@ timestamp: 2026-06-28T00:00:00Z
 
 Newest first. Each line: date — what changed.
 
+- 2026-11-04 — Weekly sweep (cloud sandbox), all 6 topics + GitHub trending
+  (6 views: daily/weekly x overall/Python/TypeScript, all reachable). **Gap
+  note:** the prior sweep was 2026-09-08 — a ~57-day gap rather than the
+  intended weekly cadence (the scheduled task evidently did not fire, or
+  this is the first run since; not investigated further here, flagged for
+  the user). Given the gap, topics were researched somewhat more broadly
+  than the usual 7-14-day window. **Execution note:** this run's background
+  sub-agent fan-out behaved unusually — attempts to launch six parallel
+  per-topic agents via the Agent tool mostly returned "subagent nesting
+  limit reached" errors to the calling turn, yet harness/models/
+  agent-tooling/devsec-tools/cognition and then knowledge were in fact
+  completed and committed as two intermediate checkpoints
+  (`8fa970b`, `83e3902`) by what must have been background execution that
+  continued despite the reported errors; the final pass (this entry) picked
+  up from those checkpoints, ran its own additional check on the models
+  topic, and did the cross-topic lint + this log/index refresh. Net result
+  is a complete sweep, but the orchestration layer's behavior here was not
+  fully understood and is worth the user's attention if it recurs.
+  21 new entries, 15 existing entries refreshed/merged, 1 open question
+  resolved (Sonnet/Haiku 5.5), 18 stale `current` entries flagged (not
+  auto-changed).
+  **models** (5 new): claude-opus-5-5 (current flagship, supersedes
+  opus-5), claude-sonnet-5-5 (current mid-tier, supersedes sonnet-5 — note:
+  this session's own configured model is `claude-sonnet-5`, one tier behind
+  this radar's current pick), claude-haiku-5-5 (unverified ship date),
+  deepseek-v4-1-flash (supersedes v4-pro, unverified); refreshed
+  claude-fable-mythos-5-1 (cross-checked against the opus-5-5 announcement's
+  own Fable-5.1 comparison), gemini-3-7-flash, glm-5-3, grok-4-6 (all
+  re-checked, still current); marked claude-opus-5 and claude-sonnet-5
+  `superseded` with explicit notes.
+  **harness** (4 new): claude-code-oct2026-updates (v2.1.295-2.1.318,
+  supersedes claude-code-aug2026-updates — the v2.1.248-294 range,
+  September through early October, was NOT independently re-fetched and is
+  logged as a coverage gap, not silently skipped), jetbrains-thinkrail
+  (competing "vibe coding" IDE), spec-driven-dev-tooling (github/spec-kit
+  vs. Fission-AI/OpenSpec), ai-design-slop-skills (Nutlope/hallmark +
+  pbakaus/impeccable); refreshed ecc-agent-harness (v2.2.3, star count
+  254k->296.8k, still unverified/inflated-pattern).
+  **knowledge** (1 new): graphify (Graphify-Labs/graphify — confirmed as
+  the upstream of this project's own `graphifyy` PyPI dependency via the
+  PyPI project page's listed Source URL; claimed ~142k stars flagged
+  unverified given inconsistent secondary-source star counts over time and
+  an SEO-content-mill pattern in surrounding coverage; separately flagged a
+  real supply-chain gap — the manually-audited 0.8.x `graphifyy` line is
+  now ~100 point releases behind the shipped 0.9.102).
+  **cognition** (2 new): mempalace (local-first verbatim memory + temporal
+  graph, unverified), dreaming-consolidation-research-2026 (Auto-Dreamer +
+  Active Dreaming Memory consolidation proposals, plus a counter-evidence
+  paper arguing against in-place memory rewriting — read as validating this
+  project's own non-destructive `memgraph-ingest` design); upgraded
+  claude-mem from `unverified` to `current` (star count now corroborated
+  across 4 independent trending views rather than one anomalous reading);
+  extended dual-process-graph-memory-research-2026 with two more papers
+  (BMAM, D-Mem).
+  **agent-tooling** (7 new): astrbot, claude-code-game-studios (compared
+  against this project's own coord.py), microsoft-agent-framework,
+  sandcastle, treg, vercel-agent-desktop, worktrunk; extended
+  trending-skillpack-star-inflation-pattern with two more repos
+  (andrej-karpathy-skills — unattributed fork/mirror, additional provenance
+  concern; claude-code-game-studios) and flagged that obra/superpowers and
+  mattpocock/skills now show an identical 312.1k star count despite
+  different commit depths, worth an API-level re-check next time.
+  **devsec-tools** (3 new): skillspector-nvidia (NVIDIA's AI-agent-skill
+  security scanner — directly relevant to this project's own
+  "skillspector"/"skillspector-gate" references; see that entry for the
+  exact relationship finding), shannon-ai-pentester, aisoc; added
+  cloudflare-security-audit-skill (official Cloudflare repo); refreshed
+  hexstrike-ai and appsec-toolchain.
+  **Lint pass:** 0 orphans (every entry linked from its own topic index,
+  verified mechanically); 1 broken cross-link found, same pre-existing
+  illustrative example in README.md as every prior sweep (`/tables/customers.md`,
+  not a real entry, left as-is); 0 new contradictions found. Resolved one
+  open question flagged by the models topic itself (Sonnet 5.5 / Haiku 5.5
+  existence) via a follow-up search. **Staleness, flagged but not
+  auto-edited** (a content refresh is a judgment call, not a mechanical
+  lint fix — per this bundle's own "report anything judgmental instead of
+  auto-changing it" rule): past the harness/models ~30-day window and still
+  `current` — harness/apache-maka, claude-code-skill-doctor,
+  context-mode-mcp, cursor-self-hosted-machines, deepseek-harness,
+  mcp-2026-07-28-spec, openai-codex, claude-plugins-marketplace;
+  models/gpt-6-astra, k2-horizon-mova-36b-a4b, marin; past the
+  devsec-tools ~30-day convention (from prior sweeps, not explicit in this
+  run's instructions) — ai-infra-guard, deepteam-redteam, mcp-scanner-cisco,
+  snyk-agent-scan; past the knowledge/cognition/agent-tooling ~120-day
+  window — knowledge/llm-wiki-compounding, attention-residuals,
+  continuous-learning-loop, prompt-caching, agent-tooling/headroom (all
+  from the 2026-06-28/29 bundle-creation batch, now ~128-129 days old).
+  **Deferred/skipped, stated honestly**: no YouTube or arXiv-API tooling
+  available in this sandbox (same limitation as every prior sweep); did not
+  independently re-fetch the full official Claude Code changelog for the
+  September-early-October gap (logged above as a coverage gap under
+  claude-code-oct2026-updates); did not deep-dive several smaller trending
+  repos noted in passing (CopilotKit/OpenBot cluster, milind-soni/OpenMausBot,
+  nightly-labs/openbot, lfnovo/open-notebook, JustVugg/colibri,
+  shiyu-coder/Kronos, karpathy/nanochat, mattpocock/sandcastle's broader
+  "sandboxed agent orchestration" competitors) — judged lower-priority or
+  off-focus given the backlog from the 57-day gap, not silently dropped;
+  did not independently reproduce any vendor-reported benchmark number cited
+  in any entry above; did not resolve whether the unusual background-agent
+  orchestration behavior this sweep (see Execution note above) is a
+  one-off or will recur.
 - 2026-09-08 — Weekly sweep, all 6 topics + GitHub trending (daily/weekly,
   overall + Python + TypeScript views), run as an isolated cloud sandbox
   session (no local disk persists, so this sweep commits+pushes directly,

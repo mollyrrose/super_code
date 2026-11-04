@@ -56,10 +56,11 @@ cache-read cost without a capability claim).
 
 # Notes
 
-- Sonnet 5.5 and Haiku 5.5 are named by Anthropic as "following" this model
-  but were not independently found/verified as shipped in this sweep —
-  check at the next scan whether `models/claude-sonnet-5.md` needs a
-  Sonnet-5.5 supersession entry.
+- **Resolved 2026-11-04 (same scan, later pass):** Sonnet 5.5 confirmed
+  shipped 2026-09-28, see [claude-sonnet-5-5](/models/claude-sonnet-5-5.md)
+  (now supersedes `claude-sonnet-5`). Haiku 5.5 followed ~2026-10-07, see
+  [claude-haiku-5-5](/models/claude-haiku-5-5.md) (date unverified,
+  secondary sources disagree).
 - Context window and max-output figures were not stated on the announcement
   page fetched this pass; confirm against platform.claude.com model docs at
   the next scan.

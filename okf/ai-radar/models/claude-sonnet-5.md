@@ -1,11 +1,11 @@
 ---
 type: model
 title: Claude Sonnet 5
-description: Anthropic's mid-tier model; approaches Opus 4.8-level performance at much lower, now-permanent pricing.
-tags: [anthropic, claude, sonnet, mid-tier]
-timestamp: 2026-08-27T00:00:00Z
+description: Anthropic's former mid-tier model; superseded by Sonnet 5.5 (2026-09-28).
+tags: [anthropic, claude, sonnet, mid-tier, superseded]
+timestamp: 2026-11-04T00:00:00Z
 resource: https://www.anthropic.com/news/claude-sonnet-5
-status: current
+status: superseded
 supersedes: []
 ---
 
@@ -36,4 +36,11 @@ egress proxy).
 
 # Notes
 
-- Re-verify pricing/context at the next scan in case of further changes.
+- **Superseded 2026-11-04 scan:** Sonnet 5 was superseded 2026-09-28 by
+  [Claude Sonnet 5.5](/models/claude-sonnet-5-5.md) — see that entry for the
+  current mid-tier model. This entry is kept as a superseded marker per the
+  bundle's `supersedes` -> "speak up" mechanic. Note: this session itself
+  (and this project's CLAUDE.md model-identity references) are configured
+  for `claude-sonnet-5`, one tier behind this radar's own current pick —
+  recorded here, not auto-actioned, since a model-pin change is a deliberate
+  decision for the user, not something this scan should do unprompted.
