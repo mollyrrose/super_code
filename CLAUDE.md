@@ -212,7 +212,7 @@ Full briefing: `exclude/SYSTEM_STRATEGIES/memory_levels_briefing.md`.
 
 - **Graph home:** `~/.claude/memory-graph/graphify-out/` (`graph.json`,
   `graph.html` visual, `GRAPH_REPORT.md`). Engine: `graphifyy` (PyPI, 0.9.102)
-  on `C:\Python314` — manually audited 2026-07-31 (see
+  on `C:\Python314` — manually audited 2026-07-31 (0.8.37) and 2026-11-04 (0.9.102) (see
   `~/.claude/.skillspector_log.jsonl`; the skillspector 100/CRITICAL score was
   judged a calibration false positive after hand-audit, user-approved).
 - **Query:** `cd ~/.claude/memory-graph && python -m graphify query "<q>"`
