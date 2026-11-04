@@ -3,7 +3,7 @@ type: Index
 title: cognition — brain-inspired memory and thinking architectures
 description: Dual-process thinking, hierarchical/episodic-semantic memory, consolidation ("dreaming"), and cognitive-architecture patterns applied to LLM agents.
 tags: [cognition, memory, dual-process, cognitive-architecture, agent-memory]
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 ---
 
 # cognition
@@ -30,11 +30,13 @@ this topic and are cross-linked here rather than duplicated:
 - [memanto](/cognition/memanto.md) — typed semantic memory, ships Claude Code integration; strongest direct match for the personal-memory-layer
 - [hermes-agent-nousresearch](/cognition/hermes-agent-nousresearch.md) — open-source self-improving agent with MEMORY.md-nudge pattern; star count now corroborated by a second independent sweep
 - [zenbrain-7layer-memory](/cognition/zenbrain-7layer-memory.md) — 7-layer neuroscience-inspired memory, ships an MCP server; small install base, self-reported benchmarks
-- [claude-mem](/cognition/claude-mem.md) — cross-session Claude Code memory plugin; star count unverified
+- [claude-mem](/cognition/claude-mem.md) — cross-session Claude Code memory plugin; star count now corroborated 4x independently, upgraded to current
+- [mempalace](/cognition/mempalace.md) — local-first verbatim memory, wings/rooms/drawers hierarchy + temporal graph; unverified
+- [dreaming-consolidation-research-2026](/cognition/dreaming-consolidation-research-2026.md) — Auto-Dreamer + Active Dreaming Memory consolidation proposals, plus counter-evidence against in-place memory rewriting
 - [agentmemory](/cognition/agentmemory.md) — hook-based multi-agent persistent memory; benchmark claims self-reported/unverified
 - [claude-obsidian](/cognition/claude-obsidian.md) — local-first Obsidian+Claude Code PKM integration
 - [talker-reasoner](/cognition/talker-reasoner.md) — foundational dual-process (fast/slow) agent architecture paper
-- [dual-process-graph-memory-research-2026](/cognition/dual-process-graph-memory-research-2026.md) — 2026 academic cluster: DCPM, SYNAPSE, MAGMA
+- [dual-process-graph-memory-research-2026](/cognition/dual-process-graph-memory-research-2026.md) — 2026 academic cluster: DCPM, SYNAPSE, MAGMA, BMAM, D-Mem
 - [letta-sleep-time-compute](/cognition/letta-sleep-time-compute.md) — MemGPT-lineage async "sleep-time agent" memory consolidation
 - [lycheememory-v2-segment-consolidation](/cognition/lycheememory-v2-segment-consolidation.md) — semantic segment-level consolidation, cuts token cost; unverified
 - [portable-agent-memory-protocol](/cognition/portable-agent-memory-protocol.md) — provenance-verified cross-agent memory-transfer protocol proposal; community-brain relevant; unverified

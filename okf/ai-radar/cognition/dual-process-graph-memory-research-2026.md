@@ -1,9 +1,9 @@
 ---
 type: pattern
-title: 2026 academic cluster — dual-process & multi-graph agent memory (DCPM, SYNAPSE, MAGMA)
-description: Three related 2026 papers pushing agent memory toward daytime/nighttime dual-process consolidation, spreading-activation retrieval, and multi-typed-graph representations.
+title: 2026 academic cluster — dual-process & multi-graph agent memory (DCPM, SYNAPSE, MAGMA, BMAM, D-Mem)
+description: Five related 2026 papers pushing agent memory toward daytime/nighttime dual-process consolidation, spreading-activation retrieval, multi-typed-graph representations, and subsystem-split (episodic/semantic/salience) memory.
 tags: [dual-process, agent-memory, knowledge-graph, research, act-r]
-timestamp: 2026-08-27T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 resource: https://github.com/FredJiang0324/MAGMA
 status: current
 supersedes: []
@@ -12,7 +12,7 @@ adoption: algorithmic-inspiration-only
 
 # Summary
 
-Three related academic threads found in this sweep:
+Five related academic threads found across this and the prior sweep:
 
 - **DCPM** ("Memory Beyond Recall: A Dual-Process Cognitive Memory System for
   Self-Evolving LLM Agents", arXiv 2606.09483, June 2026) reorganizes memory
@@ -30,16 +30,30 @@ Three related academic threads found in this sweep:
   graphs (semantic/temporal/causal/entity) and does policy-guided traversal
   across them, claiming wins over other agentic memory systems on
   LoCoMo/LongMemEval in its own evaluation.
+- **BMAM** ("Brain-inspired Multi-Agent Memory Framework", arXiv 2601.20465,
+  ACL 2026 Findings, added 2026-11-04) decomposes memory into specialized
+  subsystems — episodic, semantic, salience — rather than a single store,
+  reporting 78.45% on the standard LoCoMo long-horizon setting.
+- **D-Mem** (arXiv, March 2026, added 2026-11-04) is a narrower dual-process
+  split than DCPM: a cheap vector-retrieval "System 1" fast path, with an
+  exhaustive "Full Deliberation" module as a slower high-fidelity fallback —
+  no schema induction or nighttime consolidation, just two retrieval speeds.
+- Also noted this sweep but not written up separately (too thin a signal):
+  "Dual-Process Agent" (MDPI Electronics, March 2026, frozen-backbone
+  fast/reflective split) and a Lerma-Torres et al. preprint (complementary
+  learning systems theory mapped onto a working-memory-buffer +
+  persistent-knowledge-graph dual store) — both read as variations on the
+  same fast/slow theme already covered by DCPM/D-Mem above.
 
 # Repo / source check
 
-DCPM and SYNAPSE: no repos found (paper-only). MAGMA has a real repo: 154
+DCPM, SYNAPSE, BMAM, D-Mem: no repos found (paper-only). MAGMA has a real repo: 154
 stars, MIT license, 6 commits, a structured codebase
 (`graph_db.py`/`vector_db.py`/`query_engine.py`) including the actual LoCoMo
 dataset and runnable eval scripts — looks like a genuine research
 implementation, not a stub, but still small/early (single-digit commit
 history suggests a recent squashed push rather than long development). All
-three papers' benchmark numbers are self-reported and not independently
+five papers' benchmark numbers are self-reported and not independently
 reproduced here.
 
 # Why this is in the radar

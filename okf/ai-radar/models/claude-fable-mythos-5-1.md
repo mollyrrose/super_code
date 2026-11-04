@@ -3,7 +3,7 @@ type: model
 title: Claude Fable 5.1 and Claude Mythos 5.1
 description: Anthropic's efficiency refresh of its Fable/Mythos frontier-agentic line — a 75% cache-read price cut at unchanged headline pricing.
 tags: [anthropic, claude, fable, mythos, pricing, context-window, release]
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 resource: https://platform.claude.com/docs/en/models/fable-5-1/whats-new-fable-5-1
 status: current
 supersedes: []
@@ -43,3 +43,10 @@ the 75% cache-read cut and 2026-09-01 date.
 First tracked entry for the Fable/Mythos line, which the bundle had
 previously only referenced in passing from the Opus 5 entry. Establishes a
 baseline for future Fable/Mythos scans.
+
+**2026-11-04 re-check:** not independently re-verified this pass beyond a
+cross-reference from the new [claude-opus-5-5](/models/claude-opus-5-5.md)
+entry, whose own announcement claims Opus 5.5 "performs at the level of
+Claude Fable 5.1 on most work" — consistent with, not contradicting, this
+entry. No newer Fable/Mythos release found. Timestamp refreshed; do a full
+re-verification at the next scan.

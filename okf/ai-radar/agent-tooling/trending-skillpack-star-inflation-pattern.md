@@ -1,9 +1,9 @@
 ---
 type: pattern
 title: Star-count / commit-depth mismatch across trending "agent skill pack" repos
-description: An unusual cluster of Claude-Code/Codex "skill pack" repos this week show 130k-280k stars against 200-700 commits and low-profile single maintainers — genuine viral moment or star-gaming is unresolved.
+description: An unusual cluster of Claude-Code/Codex "skill pack" repos continues to show six-figure stars against low-hundreds-of-commits histories and low-profile maintainers — genuine viral moment or star-gaming remains unresolved.
 tags: [github-trending, skills, unverified, awareness, lint]
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 resource: https://github.com/trending
 status: unverified
 supersedes: []
@@ -20,6 +20,27 @@ stars / 459 commits), `DietrichGebert/ponytail` (132k stars / 222 commits),
 `blader/humanizer` (45k stars / 75 commits) all show the same shape. Two of
 these (`ponytail`, `archify`) posted the two largest single-week star gains
 of anything AI-related in this sweep (+12,834 and +14,946 respectively).
+
+**2026-11-04 re-check (~8 weeks later):** the two tracked repos kept growing
+but did not blow up further relative to their own curves —
+`obra/superpowers` 283k -> 312.1k stars (+29k, +10%, still 687 commits on
+`main`) and `mattpocock/skills` 257k -> 312.1k stars (+55k, +21%, 553
+commits) — i.e. both now show the identical 312.1k star count despite
+different commit counts, which is itself worth independent verification
+(coincidence, a shared counting/caching quirk in the trending-page capture,
+or a real convergence). Two new repos fit the same shape and are added to
+this entry rather than written up separately:
+- `multica-ai/andrej-karpathy-skills` — 229.3k stars on just 28 commits (a
+  single `CLAUDE.md` + a Cursor rule). The repo's own install instructions
+  point to `forrestchang/andrej-karpathy-skills`, not `multica-ai` — this
+  looks like an unattributed fork/mirror of another project, which is an
+  additional provenance concern on top of the star-count mismatch.
+- `Donchitos/Claude-Code-Game-Studios` — 35.2k stars on 43 commits (~819
+  stars/commit, higher than either `superpowers` or `mattpocock/skills`).
+  Fork ratio (~13%) and watcher count (238) look organic-template-shaped
+  rather than obviously bot-inflated, and the code itself is real and
+  functional (see its own brief entry), but the star/commit ratio puts it
+  squarely in this pattern — tracked here rather than recommended.
 
 # Repo / source check — unverified
 
@@ -50,7 +71,12 @@ rather than five near-duplicate ones per the bundle's dedup convention.
 
 - Repos in scope: `obra/superpowers`, `mattpocock/skills`,
   `DietrichGebert/ponytail`, `tt-a1i/archify`, `blader/humanizer`,
-  `cathrynlavery/diagram-design` (smaller mismatch, identified author).
+  `cathrynlavery/diagram-design` (smaller mismatch, identified author),
+  `multica-ai/andrej-karpathy-skills` (new 2026-11-04, unclear provenance),
+  `Donchitos/Claude-Code-Game-Studios` (new 2026-11-04, real/functional code
+  but same star-ratio shape).
 - Re-check star trajectories at the next scan (ideally via the GitHub API
   rather than WebFetch) to see whether the growth curves normalize or keep
-  compounding.
+  compounding. The `superpowers`/`mattpocock/skills` identical 312.1k count
+  this pass is specifically worth re-checking via the API next time, since a
+  WebFetch snapshot can't rule out a capture-time artifact.

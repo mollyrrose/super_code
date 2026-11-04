@@ -5,7 +5,7 @@ description: Subagent forking on by default, cross-session messaging, a rolling 
 tags: [claude-code, hooks, mcp, subagents, changelog]
 timestamp: 2026-09-08T00:00:00Z
 resource: https://code.claude.com/docs/en/changelog
-status: current
+status: superseded
 supersedes: []
 ---
 
@@ -75,3 +75,11 @@ persisting into the parent transcript, and a symlink-swap bug that let file
 tools escape the approved working directory after permission checks
 passed. Also see [claude-code-skill-doctor](/harness/claude-code-skill-doctor.md)
 (v2.1.261) for the new skill-auditing command from the same window.
+
+# Superseded (2026-11-04 scan)
+
+Superseded by [claude-code-oct2026-updates](/harness/claude-code-oct2026-updates.md),
+which covers v2.1.295-v2.1.318 (2026-10-08 through 2026-11-04). The v2.1.248-294
+range (most of September through early October) was not independently
+re-fetched from the official changelog this pass — flagged there as a
+coverage gap rather than silently skipped.

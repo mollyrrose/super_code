@@ -3,7 +3,7 @@ type: model
 title: GLM-5.3 (Z.ai)
 description: Zhipu/Z.ai's GLM-5.3 — a post-training-only upgrade over the GLM-5.2 base, big gains on long-horizon coding tasks.
 tags: [glm, zhipu, z.ai, coding, open-weights]
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 resource: https://www.marktechpost.com/2026/08/14/z-ai-ships-glm-5-3-without-retraining-the-base-model-better-at-complex-coding-and-long-horizon-tasks/
 status: current
 supersedes: []
@@ -40,6 +40,11 @@ independently verified against an official Z.ai model card.
 
 - Confirm open-weight availability and license terms once released
   (~2026-08-28) at the next scan.
+- **2026-11-04 re-check:** no newer GLM release found; GLM-5.3 remains
+  Z.ai's current flagship per sources checked this pass. GLM-5-Turbo and
+  GLM-5V-Turbo (older API-only variants) disappeared from Z.ai's pricing
+  page between 2026-08-24 and 2026-08-29 — noted for completeness, does not
+  change this entry's status.
 
 # Update (2026-09-08 scan): GLM-5.3-Flash unmasked and detailed
 

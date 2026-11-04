@@ -71,3 +71,21 @@ candidates flagged last scan,
 `current` and actively maintained this scan (see their entries) and remain
 candidates for an MCP-security phase not yet in the matrix above. Matrix
 substance (tool selection per existing phase) unchanged.
+
+# Lint note (2026-11-04 scan)
+
+Same limitation as above still applies (no canonical repo to check a
+curated matrix against), so this is flagged rather than silently
+re-timestamped as re-verified: this entry's `timestamp` is now ~57 days
+old against this topic's ~30-day freshness window. Judgmental call left
+unmade (deciding "is this still the best tool per phase" needs a dedicated
+research pass, not a sweep-time lookup) — a real re-verification pass is
+still owed. Two new offensive/scanner entries this scan belong in the
+excluded-tools and MCP-security-candidate sections respectively but were
+not spliced into the tables above to keep this sweep's edits additive-only:
+[shannon-ai-pentester](/devsec-tools/shannon-ai-pentester.md) (AI
+orchestrator, same "destructive: yes / awareness only" bucket as
+hexstrike-ai) and
+[skillspector-nvidia](/devsec-tools/skillspector-nvidia.md) (a third
+MCP/skill-security scanner candidate alongside mcp-scanner-cisco and
+snyk-agent-scan).

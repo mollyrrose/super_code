@@ -1,11 +1,11 @@
 ---
 type: model
 title: Claude Opus 5
-description: Anthropic's current flagship model; supersedes Opus 4.8 at unchanged Opus pricing.
-tags: [anthropic, claude, opus, flagship]
-timestamp: 2026-08-27T00:00:00Z
+description: Anthropic's former flagship model; superseded by Opus 5.5 (2026-09-22).
+tags: [anthropic, claude, opus, flagship, superseded]
+timestamp: 2026-11-04T00:00:00Z
 resource: https://www.anthropic.com/news/claude-opus-5
-status: current
+status: superseded
 supersedes: [models/claude-opus-4-8]
 ---
 
@@ -39,5 +39,7 @@ from multiple independent outlets rather than a single primary fetch).
 
 # Notes
 
-- Re-verify the exact current flagship id at the next scan — the Opus line
-  moves; this entry's `status` must be re-confirmed by `/radar-scan`.
+- **Superseded 2026-11-04 scan:** Opus 5 was superseded 2026-09-22 by
+  [Claude Opus 5.5](/models/claude-opus-5-5.md) — see that entry for the
+  current flagship. This entry is kept as a superseded marker per the
+  bundle's `supersedes` -> "speak up" mechanic.

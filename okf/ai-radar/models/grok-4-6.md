@@ -3,7 +3,7 @@ type: model
 title: Grok 4.6 (xAI)
 description: xAI's mid-cycle Grok update for long-running agentic/coding/research work; 500K context, tiered long-context pricing. First xAI entry in this bundle.
 tags: [xai, grok, pricing, context-window, release]
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 resource: https://x.ai/api
 status: current
 supersedes: []
@@ -39,3 +39,8 @@ watching as a possible industry norm forming this cycle.
 # Notes
 
 - Grok 4.7 is rumor-only; do not treat as released until confirmed.
+- **2026-11-04 re-check:** still rumor-only. Musk reportedly said (early
+  August 2026, per a single third-party site) Grok 4.7 would follow "3-4
+  weeks later" and Grok 5 "before year-end" — neither found shipped as of
+  this scan; xAI's own docs still list 4.6 as latest per the sources
+  checked. This entry stays `current` pending an actual release.

@@ -3,7 +3,7 @@ type: tool
 title: HexStrike AI
 description: MCP server + autonomous offensive agents orchestrating 150+ pentest tools against LIVE targets — offensive, dynamic, high-caution.
 tags: [offensive, pentest, red-team, mcp, ctf, awareness, high-caution]
-timestamp: 2026-09-08T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 resource: https://github.com/0x4m4/hexstrike-ai
 status: current
 supersedes: []
@@ -61,3 +61,15 @@ copycat/mirror repos exist (not the original); the canonical repo stays
 release, with a v7.0 roadmap (250+ tools, containerized deployment).
 `adoption: do-not-auto-recommend` unchanged — the caution reasoning above
 still applies at this larger scale.
+
+# Update (2026-11-04 scan): continued growth, v7.0 still unreleased
+
+Re-checked directly: now 13.3k stars / 2.7k forks / 196 watchers / 66 open
+issues (up from 11,664 stars at the 2026-09-08 check, +~1.7k over the ~57-day
+gap between sweeps). README still headlines v6.0 "150+ tools / 12+ agents";
+the v7.0 announcement ("250+ Specialized AI Agents/Tools," Docker support,
+native desktop client, one-command setup, 40% memory reduction) remains an
+unreleased "Coming Soon!" roadmap item, unchanged since the last check.
+README also surfaces unverified, unsourced performance claims (e.g. "98.7%"
+detection rate, "24x faster") with no methodology given — treat as marketing,
+not a measured result. No change to `adoption: do-not-auto-recommend`.

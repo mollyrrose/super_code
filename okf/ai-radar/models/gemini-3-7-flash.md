@@ -3,7 +3,7 @@ type: model
 title: Gemini 3.7 Flash
 description: Google's current Flash-tier model — 1M context, positioned as the workhorse for coding/agents.
 tags: [google, gemini, flash, mid-tier]
-timestamp: 2026-08-27T00:00:00Z
+timestamp: 2026-11-04T00:00:00Z
 resource: https://ai.google.dev/gemini-api/docs/latest-model
 status: current
 supersedes: []
@@ -34,3 +34,9 @@ the docs page reflects 3.7 Flash as current at the next scan).
 # Notes
 
 - Verify against ai.google.dev directly at the next scan if egress allows.
+- **2026-11-04 re-check:** no newer Gemini release found as current.
+  Reports describe a "Gemini 4 Pro" rumored for an October 2026 target
+  (single-source, unverified) and The Information reporting Google aims to
+  ship Gemini 4 before end-of-2026 with no confirmed date — treat both as
+  rumor, not release, until an official Google source confirms. This entry
+  stays `current` pending that.

@@ -1,11 +1,11 @@
 ---
 type: model
 title: DeepSeek V4-Pro-0813 (GA)
-description: DeepSeek's agentic/tool-use model exited preview to general availability; 1M-token context, open-weight. First DeepSeek model entry in this bundle.
-tags: [deepseek, open-weight, pricing, context-window, release, agentic]
-timestamp: 2026-09-08T00:00:00Z
+description: DeepSeek's agentic/tool-use model, exited preview to GA in August 2026; functionally retired 2026-09-14 when DeepSeek began routing its traffic to V4.1-Flash.
+tags: [deepseek, open-weight, pricing, context-window, release, agentic, superseded]
+timestamp: 2026-11-04T00:00:00Z
 resource: https://api-docs.deepseek.com/updates/
-status: unverified
+status: superseded
 supersedes: []
 ---
 
@@ -36,5 +36,7 @@ tracks DeepSeek's separate agent-harness product, not its models.
 
 # Notes
 
-- Fetch the model's own repo/license terms at the next scan before promoting
-  out of `unverified`. Watch for V5 rumors turning into a real release.
+- **Superseded 2026-11-04 scan:** DeepSeek began routing all V4-Pro traffic
+  to [DeepSeek V4.1-Flash](/models/deepseek-v4-1-flash.md) from
+  2026-09-14 04:00 UTC, billed at Flash rates — a functional retirement
+  pending a future V4.1-Pro release. See that entry for current detail.
