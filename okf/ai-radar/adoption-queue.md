@@ -41,7 +41,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
   install` before scanning, instead of marking every repo `unverified`.
 
 ### Routine silent-failure detection
-- status: proposed
+- status: done (2026-11-04, user-approved: `scripts/radar_health.py` + smoketest; qRem step 4 runs it every session)
 - class: B
 - source: 2026-09-15..2026-11-03 run logs (403 `authentication_failed`, 8 runs)
 - what: `RemoteTrigger` reports these runs as finished, so nobody noticed for 8
@@ -51,7 +51,7 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - revisit_if: n/a.
 
 ### Switch routine model to Sonnet 5.5
-- status: proposed
+- status: done (2026-11-04, user-approved: id `claude-sonnet-5-5` confirmed on platform.claude.com models overview; trigger updated; tiering doc now sonnet-5-5 / haiku-5-5)
 - class: C
 - source: [models/claude-sonnet-5-5](/models/claude-sonnet-5-5.md)
 - what: Same price as Sonnet 5, ~30% faster. The exact API model id was not

@@ -36,8 +36,9 @@ guardrails section in that file applies here too.
   prefer resolving class C queue items here.
 - **No commit / push** from this skill: disk only; committing is a separate
   gated step. Sync changed files to `~/.claude/okf/ai-radar/` at the end.
-- **Routine health:** if the newest `log.md` entry is older than 10 days, say so
-  first — the cloud routine is not landing (see the 403 lesson in ROUTINE.md).
+- **Routine health:** run `python ~/.claude/scripts/radar_health.py --verbose`
+  first; a stale line means the cloud routine is not landing (see the 403
+  lesson in ROUTINE.md). qRem runs the same check silently every session.
 
 ## Kill switches
 

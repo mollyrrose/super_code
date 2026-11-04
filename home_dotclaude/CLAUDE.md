@@ -1118,8 +1118,8 @@ you delegate. Follow it:
 
 - Capability ladder (ascending): haiku < sonnet < opus < fable. As of
   2026-07-02 Fable 5 is the TOP of the ladder (Mythos-class, above Opus), NOT
-  the old off-ladder "fast line". Model IDs: haiku=`claude-haiku-4-5`,
-  sonnet=`claude-sonnet-5`, opus=`claude-opus-5-5`, fable=`claude-fable-5-1` (ids refreshed 2026-11-04 from the AI Radar).
+  the old off-ladder "fast line". Model IDs: haiku=`claude-haiku-5-5`,
+  sonnet=`claude-sonnet-5-5`, opus=`claude-opus-5-5`, fable=`claude-fable-5-1` (ids confirmed 2026-11-04 on the official models page).
 - Hardest reasoning where opus is NOT enough (formal proof/derivation, novel or
   provably-optimal algorithm design, adversarial/threat-model analysis, frontier
   research synthesis) -> `fable` subagent.

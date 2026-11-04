@@ -39,7 +39,9 @@ rules in `CLAUDE.md`. Editing here changes how every Claude Code session behaves
   `~/.claude/scripts/`. Notably `context_budget_gate.py` (+ smoketest),
   `statusline_with_weekly.js`, `claude-glm.ps1` (GLM/z.ai launcher), and
   `worktree_lifecycle.py` (+ smoketest; read-only worktree states + merge
-  conflict prediction, `--gc` dry-run cleanup plan).
+  conflict prediction, `--gc` dry-run cleanup plan), and `radar_health.py`
+  (+ smoketest; one line when the weekly AI Radar routine has not landed on
+  origin/main for >10 days; qRem runs it).
 - `hermes-agent/claude_code_integration/` — curator, `smart_router_*`,
   `decision_log_cli.py`, `mark_drained_cli.py`.
 - `hermes-agent/claude_skills_backup/` — backup of installed skills, including the
