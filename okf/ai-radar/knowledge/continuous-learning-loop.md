@@ -1,7 +1,7 @@
 ---
 type: technique
 title: Continuous-learning loop (Sona / RuVector framing)
-description: "Intelligence in the loop" — frozen base + adaptive layer, EWC anti-forgetting, learn-from-trajectories, topology memory. Validates our existing direction; no new build.
+description: 'Intelligence in the loop — frozen base + adaptive layer, EWC anti-forgetting, learn-from-trajectories, topology memory. Validates our existing direction; no new build.'
 tags: [continuous-learning, ruvector, lora, ewc, memory, agent-memory]
 timestamp: 2026-06-29T00:00:00Z
 resource: https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f

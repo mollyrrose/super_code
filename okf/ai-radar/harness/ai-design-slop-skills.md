@@ -1,6 +1,6 @@
 ---
 type: tool
-title: "Anti-AI-slop" design skills for coding agents — Nutlope/hallmark and pbakaus/impeccable
+title: 'Anti-AI-slop design skills for coding agents — Nutlope/hallmark and pbakaus/impeccable'
 description: Two trending agent-skill packages that lint/polish/audit AI-generated UI for generic "AI slop" visual patterns; impeccable's live mode discloses a permission-check bypass worth flagging before adoption.
 tags: [agent-skills, design, claude-code, codex, cursor, github-trending, unverified]
 timestamp: 2026-11-04T00:00:00Z
