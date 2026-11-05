@@ -724,6 +724,12 @@ These rules apply to **every** project, regardless of whether a project-level `C
 When working in a project:
 
 - Don't create new directories outside the project root. Scratch files, experiments, backups, and intermediate artifacts all belong inside the project (typically under a gitignored `.scratch/`, `tmp/`, or similar) — not in the parent directory, not in `~`, not in `/tmp`.
+- **Ask-first gate (hard rule, added 2026-11-05).** Creating ANY directory outside the root of the project this window runs in — and above all directly in the shared parent (`D:\Projects\`) — requires either an explicit user request naming that location, or asking first and getting a yes. No silent creation, no "it's only scratch", no "it's gitignored anyway". The user's own scratchpad dir given by the harness is the only standing exception.
+- **The indirect ways count too** — these are how stray dirs actually appeared in `D:\Projects\` (`.ruff_cache`, `.scratch`, `.scratch_build_verify_chart`, `cpu_pipeline_logs`, `base44-site-template`, `CLIProxyAPI`):
+  - a tool run with the PARENT dir as cwd (`ruff`, `pytest`, `npm`, a pipeline script) drops its cache/log/output dir there -> always `cd` into the project root first, or pass an explicit in-project path (`--cache-dir`, `-o`, `--log-dir`);
+  - `../` or absolute output paths (`--outDir ../x`, `-o D:/Projects/x`) for builds, verifies, exports -> point them at `<project>/.scratch/...` instead;
+  - `git clone` / template download / repo checkout -> clone into `<project>/.scratch/` (or ask where), never into the parent, and run the skillspector gate first.
+- **Before ending a task that ran builds, linters, clones, or pipelines**, glance at the parent dir for new entries this session made; if one appeared, move it into the project (or delete it if it is pure cache) and tell the user.
 - Don't make sibling copies of the project folder with a suffix or prefix. If the project is `myproject`, do not create `myproject_s`, `myproject_2`, `myproject_backup`, `myproject-old`, `myproject.bak`, `copy_of_myproject`, or any similar near-duplicate next to it. These break tooling that walks the parent directory, confuse the user about which copy is canonical, and accumulate stale state.
 - If you need an isolated copy for an experiment, use a **git branch** or **git worktree** inside the project (see next section), not a directory copy. If you need a backup before a destructive operation, commit to a branch first.
 - If the user explicitly asks for a sibling copy, confirm the exact path and reason before creating it.
