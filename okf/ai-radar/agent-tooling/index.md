@@ -31,3 +31,4 @@ Autonomous agent frameworks, orchestration, and prompting techniques.
 - [treg](/agent-tooling/treg.md) — hosted+self-hostable agent-tool-call proxy ("OpenRouter for agent tools") keeping credentials server-side
 - [microsoft-agent-framework](/agent-tooling/microsoft-agent-framework.md) — Microsoft's AutoGen+Semantic Kernel successor, 1.0 GA April 2026; backfilled from secondary sources, not yet primary-verified
 - [source-thenextnewthingai-2026-11](/agent-tooling/source-thenextnewthingai-2026-11.md) — digest of a followed YouTube channel: 204 linked repos, ~10 relevant candidates
+- [worktree-orchestrators-roundup-2026-11](/agent-tooling/worktree-orchestrators-roundup-2026-11.md) — Orkestra/Daintree/SwarmGit/Baton/conductor; unverified

@@ -18,6 +18,7 @@ Claude Code / hook / skill / MCP capability changes and harness-level patterns.
 - [cursor-self-hosted-machines](/harness/cursor-self-hosted-machines.md) — Cursor's cloud agents can execute on customer-controlled infra; secrets never leave the network
 - [context-mode-mcp](/harness/context-mode-mcp.md) — MCP server sandboxing tool output/context budget; directly comparable to this project's own tokenjuice/budget-gate
 - [ecc-agent-harness](/harness/ecc-agent-harness.md) — the ECC plugin already installed in this project; now v2.2.3, ~297k stars (still unverified growth), functionality corroborated
+- [claude-code-nov2026-updates](/harness/claude-code-nov2026-updates.md) — v2.1.319-2.1.322: denyInsteadOfPrompting, /loop ends without reschedule, Fable 5.2 default
 - [deepseek-harness](/harness/deepseek-harness.md) — DeepSeek's competing plugin-only agent harness; grown to ~216k stars, self-disclosed as not security-audited
 - [openai-codex](/harness/openai-codex.md) — OpenAI's competing terminal coding agent; now defaults to GPT-6 Astra, added plugin tiers and delegation controls
 - [mcp-2026-07-28-spec](/harness/mcp-2026-07-28-spec.md) — MCP "stateless core" spec revision; 2026-08-22 roadmap adds agent-identity and progressive-tool-discovery priorities

@@ -20,6 +20,7 @@ Releases, price, limits, capability changes for Claude / OpenAI / GLM and peers.
 - [claude-sonnet-5-5](/models/claude-sonnet-5-5.md) — current Anthropic mid-tier; supersedes sonnet-5; same $2/$10 pricing, 30%+ faster
 - [claude-haiku-5-5](/models/claude-haiku-5-5.md) — low-cost tier, last of the Claude 5.5 family; ship date unverified (secondary sources disagree)
 - [claude-sonnet-5](/models/claude-sonnet-5.md) — superseded 2026-09-28 by sonnet-5-5 (note: this session itself still runs on this model)
+- [claude-fable-5-2](/models/claude-fable-5-2.md) — current Fable default (Claude Code 2.1.321); single-source
 - [claude-fable-mythos-5-1](/models/claude-fable-mythos-5-1.md) — Anthropic's separate frontier-agentic tier above Opus; 5.1 cuts cache-read cost 75%
 - [glm-5-3](/models/glm-5-3.md) — Z.ai's current GLM flagship; re-checked 2026-11-04, still current
 - [gemini-3-7-flash](/models/gemini-3-7-flash.md) — Google's current Flash-tier model; Gemini 4 rumored but unconfirmed

@@ -5,7 +5,7 @@ description: Fork subagents on by default outside the terminal, new agent.spawn/
 tags: [claude-code, hooks, mcp, subagents, skills, changelog]
 timestamp: 2026-11-04T00:00:00Z
 resource: https://code.claude.com/docs/en/changelog
-status: current
+status: superseded
 supersedes: [harness/claude-code-aug2026-updates]
 ---
 

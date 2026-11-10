@@ -2,7 +2,7 @@
 type: Queue
 title: AI Radar — adoption queue
 description: Findings that should change this repo, with status. The routine's Adopt step reads and updates this file; the user approves/rejects by editing status.
-timestamp: 2026-11-04T00:00:00Z
+timestamp: 2026-11-10T00:00:00Z
 ---
 
 # Adoption queue
@@ -114,6 +114,20 @@ the user. To approve or reject, change `status:` and optionally add `reason:`.
 - source: local inventory (2026-11-04)
 - what: A `timescale/timescaledb:latest` tag means a rebuild can silently jump
   a Postgres major. Pin to the running version.
+- revisit_if: n/a.
+
+### Update model-id list in tiering doc for claude-fable-5-2
+- status: proposed
+- class: C
+- source: [models/claude-fable-5-2](/models/claude-fable-5-2.md)
+- what: Local `~/.claude/CLAUDE.md` and `home_dotclaude/CLAUDE.md` "Subagent model routing" should list `claude-fable-5-2`. Cloud cannot see the local file; one-line ask.
+- revisit_if: n/a.
+
+### /loop keepalive in loop-based workflows
+- status: proposed
+- class: C
+- source: [harness/claude-code-nov2026-updates](/harness/claude-code-nov2026-updates.md)
+- what: Claude Code 2.1.319 ends self-paced /loop when a turn does not reschedule. If any local loop/until workflow relied on that, set `CLAUDE_CODE_LOOP_KEEPALIVE=1` in settings env (settings.json is off-limits to the routine).
 - revisit_if: n/a.
 
 ## Rejected

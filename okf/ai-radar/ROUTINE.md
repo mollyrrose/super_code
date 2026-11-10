@@ -2,7 +2,7 @@
 type: Runbook
 title: AI Radar — routine runbook (self-updating)
 description: The canonical instructions for the weekly AI Radar routine. The cloud trigger prompt only says "read this file and follow it", so the routine improves itself by editing the TUNABLE sections below.
-timestamp: 2026-11-04T00:00:00Z
+timestamp: 2026-11-10T00:00:00Z
 self_improve: on        # off = sweep + lint only (no Adopt step, no self-tuning)
 max_adoptions_per_run: 2
 max_stale_refresh_per_run: 8
@@ -169,6 +169,8 @@ agent-tooling 120d.
   sandbox; use code.claude.com/docs/en/changelog directly.
 - Quote YAML frontmatter values that contain `"` or `:` — two entries broke
   parsing on 2026-11-04.
+- 2026-11-10: youtube.com and gulfnews.com do not resolve from the sandbox (network allowlist); step 1b
+  source feed could not be fetched, `last_seen` left unchanged. Allow youtube.com to fix.
 - Scheduled runs 2026-09-15..2026-11-03 died in ~10s with `403
   authentication_failed` (org had disabled subscription access for Claude Code);
   if the previous `log.md` entry is >10 days old, say so first in the report.

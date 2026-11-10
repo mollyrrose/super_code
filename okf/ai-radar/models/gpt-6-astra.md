@@ -43,3 +43,9 @@ against Anthropic's flatter 1M-token pricing.
 
 - Re-verify against an official OpenAI source once the sandbox's egress
   block on `openai.com` is confirmed lifted or worked around.
+
+## 2026-11-10 note (unverified)
+
+A search headline (gulfnews, page unreachable from the sandbox) reports "GPT-6.1 Sol" launched at one-fifth
+the price after OpenAI scrapped an Astra upgrade; also GPT-6 Cyber in API 2026-11-05 at $20/$100 per Mtok
+(datastudios roundup). Not confirmed from a primary source; re-verify next run before superseding this entry.

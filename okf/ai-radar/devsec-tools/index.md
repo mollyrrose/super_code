@@ -25,3 +25,4 @@ Linters, scanners, supply-chain and security tooling relevant to the harness.
 - [shannon-ai-pentester](/devsec-tools/shannon-ai-pentester.md) — Keygraph's AI pentesting agent; live-exploit, awareness/do-not-auto-recommend, same bucket as hexstrike-ai
 - [appsec-toolchain](/devsec-tools/appsec-toolchain.md) — phase->tool matrix (destructive flag) the /pentest engine reads; flagged stale (~57 days) this scan, re-verification still owed
 - [npm-shai-hulud-scanner](/devsec-tools/npm-shai-hulud-scanner.md) — npm supply-chain worm scanner; unverified, do-not-recommend pending review; unchanged
+- [memtensor-memos-compromise](/devsec-tools/memtensor-memos-compromise.md) — credential-stealing MemOS npm/PyPI builds (Sep 2026)
